@@ -76,7 +76,7 @@ func main() {
 	ru := regionUsecase.NewUsecase(rs)
 	rh := regionHandler.NewHandler(ru)
 
-	router.StaticFS("/uploads", http.Dir("uploads"))
+	v1.StaticFS("/image", http.Dir("uploads"))
 
 	v1.POST("login", uh.Login)
 	v1.POST("register", uh.Register)
@@ -93,6 +93,7 @@ func main() {
 	{
 		participant.GET("", ph.ViewParticipants)
 		participant.GET("/:id", ph.ViewParticipant)
+		participant.PUT("/:id", ph.Update)
 	}
 
 	region := v1.Group("/region")

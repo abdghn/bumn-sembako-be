@@ -9,6 +9,7 @@ package participant
 import (
 	"bumn-sembako-be/helper"
 	"bumn-sembako-be/model"
+	"bumn-sembako-be/request"
 	"fmt"
 	"gorm.io/gorm"
 )
@@ -17,6 +18,9 @@ type Service interface {
 	ReadAllBy(criteria map[string]interface{}, search string, page, size int) (*[]model.Participant, error)
 	ReadById(id int) (*model.Participant, error)
 	Count(criteria map[string]interface{}) int64
+	Update(id int, participant request.UpdateParticipant) (*model.Participant, error)
+	UpdateStatus(id int, status *request.PartialDone) (*model.Participant, error)
+	Create(participant *model.Participant) (*model.Participant, error)
 }
 
 type service struct {
@@ -70,4 +74,44 @@ func (s *service) Count(criteria map[string]interface{}) int64 {
 		return 0
 	}
 	return result
+}
+
+func (e *service) Update(id int, participant request.UpdateParticipant) (*model.Participant, error) {
+	var upParticipant = model.Participant{}
+	err := e.db.Table("participants").Where("id = ?", id).First(&upParticipant).Updates(&participant).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[participant.service.Update] error execute query %v \n", err)
+		return nil, fmt.Errorf("failed update data")
+	}
+	return &upParticipant, nil
+}
+
+func (e *service) UpdateStatus(id int, status *request.PartialDone) (*model.Participant, error) {
+	var upParticipant = model.Participant{}
+	err := e.db.Table("participants").Where("id = ?", id).First(&upParticipant).Updates(&status).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[participant.service.UpdateStatus] error execute query %v \n", err)
+		return nil, fmt.Errorf("failed update data")
+	}
+	return &upParticipant, nil
+}
+
+func (e *service) Create(participant *model.Participant) (*model.Participant, error) {
+	tx := e.db.Begin()
+	defer tx.Rollback()
+
+	err := tx.Save(&participant).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[participant.service.Create] error execute query %v \n", err)
+		return nil, fmt.Errorf("failed insert data")
+	}
+
+	helper.CommonLogger().Error(err)
+
+	tx.Commit()
+
+	return participant, nil
 }

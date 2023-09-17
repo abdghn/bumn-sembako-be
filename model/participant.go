@@ -31,6 +31,8 @@ type Participant struct {
 	ResidenceKelurahan string     `json:"residence_kelurahan"`
 	ResidenceKodePOS   string     `json:"residence_kode_pos"`
 	Status             string     `json:"status"`
+	Image              string     `json:"image" gorm:"type: text"`
+	IsRepresented      bool       `json:"is_represented" gorm:"default:false"`
 	CreatedAt          time.Time  `json:"created_at"`
 	UpdatedAt          time.Time  `json:"updated_at"`
 	DeletedAt          *time.Time `sql:"index" json:"deleted_at"`

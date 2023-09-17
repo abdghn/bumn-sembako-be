@@ -16,6 +16,7 @@ type Usecase interface {
 	ReadAllBy(req request.ParticipantPaged) (*[]model.Participant, error)
 	Count(req request.ParticipantPaged) int64
 	ReadById(id int) (*model.Participant, error)
+	Update(id int, input request.UpdateParticipant) (*model.Participant, error)
 }
 
 type usecase struct {
@@ -55,4 +56,69 @@ func (u *usecase) Count(req request.ParticipantPaged) int64 {
 	}
 
 	return u.service.Count(criteria)
+}
+
+func (u *usecase) Update(id int, input request.UpdateParticipant) (*model.Participant, error) {
+	var err error
+	participant, err := u.ReadById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if input.Status == "PARTIAL_DONE" {
+		req := &request.PartialDone{Status: "PARTIAL_DONE"}
+
+		updatedParticipant, err := u.service.UpdateStatus(participant.ID, req)
+		if err != nil {
+			return nil, err
+		}
+
+		return updatedParticipant, nil
+
+	} else if input.Status == "REJECTED" {
+		req := &request.PartialDone{Status: "REJECTED"}
+
+		_, err = u.service.UpdateStatus(id, req)
+		if err != nil {
+			return nil, err
+		}
+
+		m := &model.Participant{
+			Name:      input.Name,
+			NIK:       input.NIK,
+			Gender:    input.Gender,
+			Phone:     input.Phone,
+			Address:   input.Address,
+			RT:        input.RT,
+			RW:        input.RW,
+			Provinsi:  input.Provinsi,
+			Kota:      input.Kota,
+			Kecamatan: input.Kecamatan,
+			Kelurahan: input.Kelurahan,
+			KodePOS:   input.KodePOS,
+			Image:     input.Image,
+			Status:    "DONE",
+		}
+
+		newParticipant, err := u.service.Create(m)
+		if err != nil {
+			return nil, err
+		}
+
+		return newParticipant, nil
+
+	} else if input.Status == "DONE" {
+		req := &request.PartialDone{Status: "DONE", Image: input.Image}
+
+		updateParticipant, err := u.service.UpdateStatus(id, req)
+		if err != nil {
+			return nil, err
+		}
+
+		return updateParticipant, nil
+
+	}
+
+	return participant, nil
+
 }
