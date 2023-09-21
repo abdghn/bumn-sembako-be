@@ -18,7 +18,7 @@ type User struct {
 	Kota           string       `json:"kota"`
 	OrganizationID uint         `json:"organization_id" gorm:"column:organization_id"`
 	Organization   Organization `json:"organization" gorm:"foreignKey:OrganizationID"`
-	RetryAttempt   int64        `json:"retry_attempt"`
+	RetryAttempts  int64        `json:"retry_attempts"`
 	CreatedAt      time.Time    `json:"created_at"`
 	UpdatedAt      time.Time    `json:"updated_at"`
 	DeletedAt      *time.Time   `sql:"index" json:"deleted_at"`

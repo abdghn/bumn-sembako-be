@@ -10,7 +10,6 @@ import (
 	"bumn-sembako-be/helper"
 	"bumn-sembako-be/request"
 	"bumn-sembako-be/usecase/participant"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
@@ -118,7 +117,29 @@ func (h *handler) Update(c *gin.Context) {
 
 		tempParticipant.Image = "image/" + filename
 
-		fmt.Print(tempParticipant.Image)
+	}
+
+	if tempParticipant.Status != "PARTIAL_DONE" && tempParticipant.Status != "" && tempParticipant.FilePenerima != nil {
+
+		path := "./uploads"
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			_ = os.Mkdir(path, os.ModePerm)
+		}
+
+		file := tempParticipant.FilePenerima
+
+		// generate new file name
+		ext := filepath.Ext(file.Filename)
+		currentTime := time.Now()
+		filename := currentTime.Format("20060102150405") + ext
+
+		tmpFile := path + "/" + filename
+		if err = c.SaveUploadedFile(file, tmpFile); err != nil {
+			helper.HandleError(c, http.StatusBadRequest, "failed to saving image")
+			return
+		}
+
+		tempParticipant.ImagePenerima = "image/" + filename
 
 	}
 

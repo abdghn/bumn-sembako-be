@@ -50,6 +50,7 @@ type UpdateParticipant struct {
 	ImagePenerima      string                `json:"image_penerima" form:"image_penerima"`
 	File               *multipart.FileHeader `json:"-" form:"file"`
 	FilePenerima       *multipart.FileHeader `json:"-" form:"file_penerima"`
+	UpdatedBy          string                `json:"updated_by" form:"updated_by"`
 }
 
 type ParticipantDone struct {
@@ -57,6 +58,7 @@ type ParticipantDone struct {
 	File          *multipart.FileHeader `json:"-" form:"file"`
 	Image         string                `json:"image" form:"image"`
 	ImagePenerima string                `json:"image_penerima" form:"image_penerima"`
+	UpdatedBy     string                `json:"updated_by" form:"updated_by"`
 }
 
 type PartialDone struct {

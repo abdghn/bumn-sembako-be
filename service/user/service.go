@@ -47,7 +47,7 @@ func (e *service) ReadAllBy(criteria map[string]interface{}, search string, page
 	}
 
 	limit, offset := helper.GetLimitOffset(page, size)
-	err := query.Offset(offset).Order("created_at ASC").Limit(limit).Find(&users).Error
+	err := query.Preload("Organization").Offset(offset).Order("created_at ASC").Limit(limit).Find(&users).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		fmt.Printf("[user.service.ReadAllBy] error execute query %v \n", err)
@@ -58,7 +58,7 @@ func (e *service) ReadAllBy(criteria map[string]interface{}, search string, page
 
 func (e *service) ReadById(id int) (*model.User, error) {
 	var user = model.User{}
-	err := e.db.Table("users").Where("id = ?", id).First(&user).Error
+	err := e.db.Preload("Organization").Table("users").Where("id = ?", id).First(&user).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		fmt.Printf("[user.service.ReadById] error execute query %v \n", err)

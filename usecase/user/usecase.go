@@ -91,20 +91,7 @@ func (u *usecase) Login(user request.Login) (*model.User, error) {
 		return nil, err
 	}
 
-	updateUser := &request.User{
-		Name:         getUser.Name,
-		Username:     getUser.Username,
-		Password:     getUser.Password,
-		Role:         getUser.Role,
-		RetryAttempt: getUser.RetryAttempt + 1,
-	}
-
-	update, err := u.service.Update(getUser.ID, updateUser)
-	if err != nil {
-		return nil, err
-	}
-
-	return update, nil
+	return getUser, nil
 }
 
 func (u *usecase) ReadAllBy(req request.UserPaged) (*[]model.User, error) {
@@ -125,11 +112,11 @@ func (u *usecase) ReadById(id int) (*model.User, error) {
 
 func (u *usecase) Update(id int, user *model.User) (*model.User, error) {
 	updateUser := &request.User{
-		Name:         user.Name,
-		Username:     user.Username,
-		Password:     user.Password,
-		Role:         user.Role,
-		RetryAttempt: 0,
+		Name:          user.Name,
+		Username:      user.Username,
+		Password:      user.Password,
+		Role:          user.Role,
+		RetryAttempts: user.RetryAttempts,
 	}
 	return u.service.Update(id, updateUser)
 }

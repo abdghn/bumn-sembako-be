@@ -68,6 +68,18 @@ func (u *usecase) Count(req request.ParticipantPaged) int64 {
 		criteria["kota"] = req.Kota
 	}
 
+	if req.Kecamatan != "" {
+		criteria["kecamatan"] = req.Kecamatan
+	}
+
+	if req.Kelurahan != "" {
+		criteria["kelurahan"] = req.Kelurahan
+	}
+
+	if req.Status != "" {
+		criteria["status"] = req.Status
+	}
+
 	return u.service.Count(criteria)
 }
 
@@ -79,7 +91,7 @@ func (u *usecase) Update(id int, input request.UpdateParticipant) (*model.Partic
 	}
 
 	if input.Status == "PARTIAL_DONE" {
-		req := &request.PartialDone{Status: "PARTIAL_DONE"}
+		req := &request.PartialDone{Status: "PARTIAL_DONE", UpdatedBy: input.UpdatedBy}
 
 		updatedParticipant, err := u.service.UpdateStatus(participant.ID, req)
 		if err != nil {
@@ -89,7 +101,7 @@ func (u *usecase) Update(id int, input request.UpdateParticipant) (*model.Partic
 		return updatedParticipant, nil
 
 	} else if input.Status == "REJECTED" {
-		req := &request.PartialDone{Status: "REJECTED"}
+		req := &request.PartialDone{Status: "REJECTED", UpdatedBy: input.UpdatedBy}
 
 		_, err = u.service.UpdateStatus(id, req)
 		if err != nil {
@@ -112,6 +124,7 @@ func (u *usecase) Update(id int, input request.UpdateParticipant) (*model.Partic
 			Image:         input.Image,
 			ImagePenerima: input.ImagePenerima,
 			Status:        "DONE",
+			UpdatedBy:     input.UpdatedBy,
 		}
 
 		newParticipant, err := u.service.Create(m)
@@ -122,7 +135,7 @@ func (u *usecase) Update(id int, input request.UpdateParticipant) (*model.Partic
 		return newParticipant, nil
 
 	} else if input.Status == "DONE" {
-		req := &request.PartialDone{Status: "DONE", Image: input.Image, ImagePenerima: input.ImagePenerima}
+		req := &request.PartialDone{Status: "DONE", Image: input.Image, ImagePenerima: input.ImagePenerima, UpdatedBy: input.UpdatedBy}
 
 		updateParticipant, err := u.service.UpdateStatus(id, req)
 		if err != nil {

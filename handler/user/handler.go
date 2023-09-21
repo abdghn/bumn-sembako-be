@@ -80,12 +80,19 @@ func (h *handler) Login(c *gin.Context) {
 
 	isTrue := helper.ComparePassword(dbUser.Password, user.Password)
 	if !isTrue {
+
+		dbUser.RetryAttempts = dbUser.RetryAttempts + 1
+		if dbUser.RetryAttempts > 3 {
+			helper.HandleError(c, http.StatusTooManyRequests, "You have retry 3 times")
+			return
+		}
+		_, err = h.usecase.Update(dbUser.ID, dbUser)
 		helper.HandleError(c, http.StatusInternalServerError, "Password not matched")
 		return
 	}
 
 	token := helper.GenerateToken(dbUser)
-	result := map[string]interface{}{"token": token, "user": dbUser.Name}
+	result := map[string]interface{}{"token": token, "user": dbUser.Name, "userData": dbUser}
 	helper.HandleSuccess(c, result)
 
 }

@@ -27,11 +27,11 @@ type UpdateUser struct {
 }
 
 type User struct {
-	Name         string `json:"name"`
-	Username     string `json:"username"`
-	Role         string `json:"role"`
-	Password     string `json:"password"`
-	RetryAttempt int64  `json:"retry_attempt"`
+	Name          string `json:"name"`
+	Username      string `json:"username"`
+	Role          string `json:"role"`
+	Password      string `json:"password"`
+	RetryAttempts int64  `json:"retry_attempts"`
 }
 
 type UserPaged struct {
