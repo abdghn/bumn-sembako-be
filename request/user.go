@@ -15,7 +15,7 @@ type Register struct {
 	Name           string `json:"name"`
 	Provinsi       string `json:"provinsi"`
 	Kota           string `json:"kota"`
-	OrganizationID int    `json:"organization_id"`
+	OrganizationID uint   `json:"organization_id"`
 	Username       string `json:"username"`
 	Password       string `json:"password"`
 }
