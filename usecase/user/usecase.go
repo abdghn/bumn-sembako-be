@@ -69,6 +69,8 @@ func (u *usecase) Register(user request.Register) (*model.User, error) {
 		Username:       user.Username,
 		Password:       user.Password,
 		OrganizationID: user.OrganizationID,
+		Kota:           user.Kota,
+		Provinsi:       user.Provinsi,
 		Role:           ROLE,
 	}
 
