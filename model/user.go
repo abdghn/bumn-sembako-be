@@ -9,12 +9,17 @@ package model
 import "time"
 
 type User struct {
-	ID        int        `json:"id" gorm:"primary_key"`
-	Name      string     `json:"name"`
-	Username  string     `json:"username"  gorm:"unique"`
-	Password  string     `json:"-"`
-	Role      string     `json:"role"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
-	DeletedAt *time.Time `sql:"index" json:"deleted_at"`
+	ID             int          `json:"id" gorm:"primary_key"`
+	Name           string       `json:"name"`
+	Username       string       `json:"username"  gorm:"unique"`
+	Password       string       `json:"-"`
+	Role           string       `json:"role"`
+	Provinsi       string       `json:"provinsi"`
+	Kota           string       `json:"kota"`
+	OrganizationID uint         `json:"organization_id" gorm:"column:organization_id"`
+	Organization   Organization `json:"organization" gorm:"foreignKey:OrganizationID"`
+	RetryAttempt   int64        `json:"retry_attempt"`
+	CreatedAt      time.Time    `json:"created_at"`
+	UpdatedAt      time.Time    `json:"updated_at"`
+	DeletedAt      *time.Time   `sql:"index" json:"deleted_at"`
 }

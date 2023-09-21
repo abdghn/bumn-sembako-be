@@ -12,9 +12,12 @@ type Login struct {
 }
 
 type Register struct {
-	Name     string `json:"name"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Name           string `json:"name"`
+	Provinsi       string `json:"provinsi"`
+	Kota           string `json:"kota"`
+	OrganizationID int    `json:"organization_id"`
+	Username       string `json:"username"`
+	Password       string `json:"password"`
 }
 
 type UpdateUser struct {
@@ -24,10 +27,11 @@ type UpdateUser struct {
 }
 
 type User struct {
-	Name     string `json:"name"`
-	Username string `json:"username"`
-	Role     string `json:"role"`
-	Password string `json:"password"`
+	Name         string `json:"name"`
+	Username     string `json:"username"`
+	Role         string `json:"role"`
+	Password     string `json:"password"`
+	RetryAttempt int64  `json:"retry_attempt"`
 }
 
 type UserPaged struct {

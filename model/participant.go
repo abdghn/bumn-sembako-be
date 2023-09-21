@@ -32,8 +32,17 @@ type Participant struct {
 	ResidenceKodePOS   string     `json:"residence_kode_pos"`
 	Status             string     `json:"status"`
 	Image              string     `json:"image" gorm:"type: text"`
+	ImagePenerima      string     `json:"image_penerima" gorm:"type: text"`
 	IsRepresented      bool       `json:"is_represented" gorm:"default:false"`
 	CreatedAt          time.Time  `json:"created_at"`
 	UpdatedAt          time.Time  `json:"updated_at"`
 	DeletedAt          *time.Time `sql:"index" json:"deleted_at"`
+}
+
+type TotalParticipantResponse struct {
+	TotaPenerima       int64 `json:"tota_penerima"`
+	TotalSudahMenerima int64 `json:"total_sudah_menerima"`
+	TotalPartialDone   int64 `json:"total_partial_done"`
+	TotalBelumMenerima int64 `json:"total_belum_menerima"`
+	TotalDataGugur     int64 `json:"total_data_gugur"`
 }

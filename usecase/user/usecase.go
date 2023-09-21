@@ -24,6 +24,7 @@ type Usecase interface {
 	ReadById(id int) (*model.User, error)
 	Update(id int, user *model.User) (*model.User, error)
 	Delete(id int) error
+	ReadAllOrganization() (*[]model.Organization, error)
 }
 
 type usecase struct {
@@ -83,7 +84,27 @@ func (u *usecase) Register(user request.Register) (*model.User, error) {
 }
 
 func (u *usecase) Login(user request.Login) (*model.User, error) {
-	return u.service.ReadByUsername(user.Username)
+
+	getUser, err := u.service.ReadByUsername(user.Username)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		return nil, err
+	}
+
+	updateUser := &request.User{
+		Name:         getUser.Name,
+		Username:     getUser.Username,
+		Password:     getUser.Password,
+		Role:         getUser.Role,
+		RetryAttempt: getUser.RetryAttempt + 1,
+	}
+
+	update, err := u.service.Update(getUser.ID, updateUser)
+	if err != nil {
+		return nil, err
+	}
+
+	return update, nil
 }
 
 func (u *usecase) ReadAllBy(req request.UserPaged) (*[]model.User, error) {
@@ -104,14 +125,19 @@ func (u *usecase) ReadById(id int) (*model.User, error) {
 
 func (u *usecase) Update(id int, user *model.User) (*model.User, error) {
 	updateUser := &request.User{
-		Name:     user.Name,
-		Username: user.Username,
-		Password: user.Password,
-		Role:     user.Role,
+		Name:         user.Name,
+		Username:     user.Username,
+		Password:     user.Password,
+		Role:         user.Role,
+		RetryAttempt: 0,
 	}
 	return u.service.Update(id, updateUser)
 }
 
 func (u *usecase) Delete(id int) error {
 	return u.service.Delete(id)
+}
+
+func (u *usecase) ReadAllOrganization() (*[]model.Organization, error) {
+	return u.service.ReadAllOrganization()
 }

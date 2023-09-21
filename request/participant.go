@@ -9,9 +9,17 @@ package request
 import "mime/multipart"
 
 type ParticipantPaged struct {
-	Search   string `form:"search"`
-	Page     int    `form:"page"`
-	Size     int    `form:"size"`
+	Search    string `form:"search"`
+	Page      int    `form:"page"`
+	Size      int    `form:"size"`
+	Provinsi  string `form:"provinsi"`
+	Kota      string `form:"kota"`
+	Kecamatan string `form:"kecamatan"`
+	Kelurahan string `form:"kelurahan"`
+	Status    string `form:"status"`
+}
+
+type ParticipantFilter struct {
 	Provinsi string `form:"provinsi"`
 	Kota     string `form:"kota"`
 }
@@ -39,16 +47,20 @@ type UpdateParticipant struct {
 	ResidenceKodePOS   string                `json:"residence_kode_pos" form:"residence_kode_pos"`
 	Status             string                `json:"status" form:"status"`
 	Image              string                `json:"image" form:"image"`
+	ImagePenerima      string                `json:"image_penerima" form:"image_penerima"`
 	File               *multipart.FileHeader `json:"-" form:"file"`
+	FilePenerima       *multipart.FileHeader `json:"-" form:"file_penerima"`
 }
 
 type ParticipantDone struct {
-	Status string                `json:"status"`
-	File   *multipart.FileHeader `json:"-" form:"file"`
-	Image  string                `json:"image"`
+	Status        string                `json:"status" form:"status"`
+	File          *multipart.FileHeader `json:"-" form:"file"`
+	Image         string                `json:"image" form:"image"`
+	ImagePenerima string                `json:"image_penerima" form:"image_penerima"`
 }
 
 type PartialDone struct {
-	Status string `json:"status"`
-	Image  string `json:"image"`
+	Status        string `json:"status" form:"status"`
+	Image         string `json:"image" form:"image"`
+	ImagePenerima string `json:"image_penerima" form:"image_penerima"`
 }

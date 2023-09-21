@@ -23,6 +23,7 @@ type Handler interface {
 	ViewParticipants(c *gin.Context)
 	ViewParticipant(c *gin.Context)
 	Update(c *gin.Context)
+	ViewDashboard(c *gin.Context)
 }
 
 type handler struct {
@@ -128,4 +129,19 @@ func (h *handler) Update(c *gin.Context) {
 		return
 	}
 	helper.HandleSuccess(c, updatedParticipant)
+}
+
+func (h *handler) ViewDashboard(c *gin.Context) {
+	var req request.ParticipantFilter
+	var err error
+
+	err = c.ShouldBindQuery(&req)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, "Oopss server someting wrong")
+		return
+	}
+
+	result, err := h.usecase.GetTotalDashboard(req)
+	helper.HandleSuccess(c, result)
 }

@@ -17,6 +17,7 @@ type Usecase interface {
 	Count(req request.ParticipantPaged) int64
 	ReadById(id int) (*model.Participant, error)
 	Update(id int, input request.UpdateParticipant) (*model.Participant, error)
+	GetTotalDashboard(req request.ParticipantFilter) (*model.TotalParticipantResponse, error)
 }
 
 type usecase struct {
@@ -36,6 +37,18 @@ func (u *usecase) ReadAllBy(req request.ParticipantPaged) (*[]model.Participant,
 
 	if req.Kota != "" {
 		criteria["kota"] = req.Kota
+	}
+
+	if req.Kecamatan != "" {
+		criteria["kecamatan"] = req.Kecamatan
+	}
+
+	if req.Kelurahan != "" {
+		criteria["kelurahan"] = req.Kelurahan
+	}
+
+	if req.Status != "" {
+		criteria["status"] = req.Status
 	}
 
 	return u.service.ReadAllBy(criteria, req.Search, req.Page, req.Size)
@@ -84,20 +97,21 @@ func (u *usecase) Update(id int, input request.UpdateParticipant) (*model.Partic
 		}
 
 		m := &model.Participant{
-			Name:      input.Name,
-			NIK:       input.NIK,
-			Gender:    input.Gender,
-			Phone:     input.Phone,
-			Address:   input.Address,
-			RT:        input.RT,
-			RW:        input.RW,
-			Provinsi:  input.Provinsi,
-			Kota:      input.Kota,
-			Kecamatan: input.Kecamatan,
-			Kelurahan: input.Kelurahan,
-			KodePOS:   input.KodePOS,
-			Image:     input.Image,
-			Status:    "DONE",
+			Name:          input.Name,
+			NIK:           input.NIK,
+			Gender:        input.Gender,
+			Phone:         input.Phone,
+			Address:       input.Address,
+			RT:            input.RT,
+			RW:            input.RW,
+			Provinsi:      input.Provinsi,
+			Kota:          input.Kota,
+			Kecamatan:     input.Kecamatan,
+			Kelurahan:     input.Kelurahan,
+			KodePOS:       input.KodePOS,
+			Image:         input.Image,
+			ImagePenerima: input.ImagePenerima,
+			Status:        "DONE",
 		}
 
 		newParticipant, err := u.service.Create(m)
@@ -108,7 +122,7 @@ func (u *usecase) Update(id int, input request.UpdateParticipant) (*model.Partic
 		return newParticipant, nil
 
 	} else if input.Status == "DONE" {
-		req := &request.PartialDone{Status: "DONE", Image: input.Image}
+		req := &request.PartialDone{Status: "DONE", Image: input.Image, ImagePenerima: input.ImagePenerima}
 
 		updateParticipant, err := u.service.UpdateStatus(id, req)
 		if err != nil {
@@ -120,5 +134,40 @@ func (u *usecase) Update(id int, input request.UpdateParticipant) (*model.Partic
 	}
 
 	return participant, nil
+
+}
+
+func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.TotalParticipantResponse, error) {
+	var m model.TotalParticipantResponse
+	status := "NOT DONE"
+
+	criteria := make(map[string]interface{})
+	if req.Provinsi != "" {
+		criteria["provinsi"] = req.Provinsi
+	}
+
+	if req.Kota != "" {
+		criteria["kota"] = req.Kota
+	}
+
+	criteria["status"] = status
+
+	m.TotaPenerima = u.service.Count(criteria)
+
+	status = "PARTIAL_DONE"
+	criteria["status"] = status
+	m.TotalPartialDone = u.service.Count(criteria)
+
+	status = "REJECTED"
+	criteria["status"] = status
+	m.TotalDataGugur = u.service.Count(criteria)
+
+	status = "DONE"
+	criteria["status"] = status
+	m.TotalSudahMenerima = u.service.Count(criteria)
+
+	m.TotalBelumMenerima = m.TotaPenerima - (m.TotalPartialDone + m.TotalDataGugur + m.TotalSudahMenerima)
+
+	return &m, nil
 
 }

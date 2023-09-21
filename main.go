@@ -80,6 +80,7 @@ func main() {
 
 	v1.POST("login", uh.Login)
 	v1.POST("register", uh.Register)
+	v1.GET("dashboard", ph.ViewDashboard)
 	//
 	user := v1.Group("/user")
 	{
@@ -87,6 +88,7 @@ func main() {
 		user.POST("", uh.CreateUser)
 		user.PUT("/:id", uh.UpdateUser)
 		user.DELETE("/:id", uh.DeleteUser)
+		user.GET("organization", uh.ViewOrganizations)
 	}
 
 	participant := v1.Group("/participant")

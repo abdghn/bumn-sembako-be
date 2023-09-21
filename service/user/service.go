@@ -22,6 +22,7 @@ type Service interface {
 	Delete(id int) error
 	Count(criteria map[string]interface{}) int64
 	ReadAllBy(criteria map[string]interface{}, search string, page, size int) (*[]model.User, error)
+	ReadAllOrganization() (*[]model.Organization, error)
 }
 
 type service struct {
@@ -125,4 +126,15 @@ func (e *service) Count(criteria map[string]interface{}) int64 {
 		return 0
 	}
 	return result
+}
+
+func (s *service) ReadAllOrganization() (*[]model.Organization, error) {
+	var organizations []model.Organization
+	err := s.db.Find(&organizations).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[user.service.ReadAllOrganization] error execute query %v \n", err)
+		return nil, fmt.Errorf("failed view all data")
+	}
+	return &organizations, nil
 }

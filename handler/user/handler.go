@@ -23,6 +23,7 @@ type Handler interface {
 	CreateUser(c *gin.Context)
 	UpdateUser(c *gin.Context)
 	DeleteUser(c *gin.Context)
+	ViewOrganizations(c *gin.Context)
 }
 
 type handler struct {
@@ -193,5 +194,17 @@ func (h *handler) DeleteUser(c *gin.Context) {
 		return
 	}
 	helper.HandleSuccess(c, "success delete data")
+
+}
+
+func (h *handler) ViewOrganizations(c *gin.Context) {
+	organizations, err := h.usecase.ReadAllOrganization()
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	helper.HandleSuccess(c, organizations)
 
 }
