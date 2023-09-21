@@ -90,16 +90,6 @@ func (u *usecase) Login(user request.Login) (*model.User, error) {
 		helper.CommonLogger().Error(err)
 		return nil, err
 	}
-
-	getUser.RetryAttempts = 0
-
-	updateUser := &request.User{RetryAttempts: 0}
-	_, err = u.service.Update(getUser.ID, updateUser)
-	if err != nil {
-		helper.CommonLogger().Error(err)
-		return nil, err
-	}
-
 	return getUser, nil
 }
 

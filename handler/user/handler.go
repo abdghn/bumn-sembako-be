@@ -91,6 +91,14 @@ func (h *handler) Login(c *gin.Context) {
 		return
 	}
 
+	dbUser.RetryAttempts = 0
+	_, err = h.usecase.Update(dbUser.ID, dbUser)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	token := helper.GenerateToken(dbUser)
 	result := map[string]interface{}{"token": token, "user": dbUser.Name, "userData": dbUser}
 	helper.HandleSuccess(c, result)
