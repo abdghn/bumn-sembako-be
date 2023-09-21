@@ -67,4 +67,3 @@ type PartialDone struct {
 	ImagePenerima string `json:"image_penerima" form:"image_penerima"`
 	UpdatedBy     string `json:"updated_by" form:"updated_by"`
 }
-}
