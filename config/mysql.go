@@ -30,6 +30,7 @@ func DbConnect(DBUSER, DBPASSWORD, DBHOST, DBPORT, DBNAME string) *gorm.DB {
 		model.Regency{},
 		model.District{},
 		model.Village{},
+		model.Quota{},
 	)
 
 	sqlDB, err := db.DB()

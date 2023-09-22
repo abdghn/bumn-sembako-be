@@ -47,3 +47,10 @@ type TotalParticipantResponse struct {
 	TotalBelumMenerima int64 `json:"total_belum_menerima"`
 	TotalDataGugur     int64 `json:"total_data_gugur"`
 }
+
+type Report struct {
+	NIK   string
+	Name  string
+	Phone string
+	Image string
+}

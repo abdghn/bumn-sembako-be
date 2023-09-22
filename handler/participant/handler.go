@@ -23,6 +23,7 @@ type Handler interface {
 	ViewParticipant(c *gin.Context)
 	Update(c *gin.Context)
 	ViewDashboard(c *gin.Context)
+	ExportReport(c *gin.Context)
 }
 
 type handler struct {
@@ -165,4 +166,56 @@ func (h *handler) ViewDashboard(c *gin.Context) {
 
 	result, err := h.usecase.GetTotalDashboard(req)
 	helper.HandleSuccess(c, result)
+}
+
+func (h *handler) ExportReport(c *gin.Context) {
+	var req request.Report
+	var err error
+
+	err = c.Bind(&req)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, "Oopss server someting wrong")
+		return
+	}
+
+	path, err := h.usecase.Export(req)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	//pdfg, err := wkhtmltopdf.NewPDFGenerator()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//f, err := os.Open("./report.html")
+	//if f != nil {
+	//	defer f.Close()
+	//}
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//pdfg.AddPage(wkhtmltopdf.NewPageReader(f))
+	//
+	//pdfg.Orientation.Set(wkhtmltopdf.OrientationPortrait)
+	//pdfg.Dpi.Set(300)
+	//
+	//err = pdfg.Create()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//err = pdfg.WriteFile("./output.pdf")
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//log.Println("Done")
+
+	helper.HandleSuccess(c, path)
+
 }
