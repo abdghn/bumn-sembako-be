@@ -152,7 +152,7 @@ func (u *usecase) Update(id int, input request.UpdateParticipant) (*model.Partic
 
 func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.TotalParticipantResponse, error) {
 	var m model.TotalParticipantResponse
-	status := "NOT DONE"
+	status := ""
 
 	criteria := make(map[string]interface{})
 	if req.Provinsi != "" {
@@ -162,8 +162,6 @@ func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.Total
 	if req.Kota != "" {
 		criteria["kota"] = req.Kota
 	}
-
-	criteria["status"] = status
 
 	m.TotaPenerima = u.service.Count(criteria)
 
@@ -179,7 +177,10 @@ func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.Total
 	criteria["status"] = status
 	m.TotalSudahMenerima = u.service.Count(criteria)
 
-	m.TotalBelumMenerima = m.TotaPenerima - (m.TotalPartialDone + m.TotalDataGugur + m.TotalSudahMenerima)
+	status = "NOT DONE"
+	criteria["status"] = status
+
+	m.TotalBelumMenerima = u.service.Count(criteria)
 
 	return &m, nil
 
