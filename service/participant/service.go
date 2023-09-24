@@ -21,6 +21,7 @@ type Service interface {
 	Update(id int, participant request.UpdateParticipant) (*model.Participant, error)
 	UpdateStatus(id int, status *request.PartialDone) (*model.Participant, error)
 	Create(participant *model.Participant) (*model.Participant, error)
+	ReadAllReport(criteria map[string]interface{}) ([]*model.Report, error)
 }
 
 type service struct {
@@ -114,4 +115,17 @@ func (e *service) Create(participant *model.Participant) (*model.Participant, er
 	tx.Commit()
 
 	return participant, nil
+}
+
+func (s *service) ReadAllReport(criteria map[string]interface{}) ([]*model.Report, error) {
+	var reports []*model.Report
+
+	query := s.db.Table("participants").Select("ROW_NUMBER() OVER (ORDER BY id) AS No", "nik as NIK", "name AS Name", "image as Image", "phone AS Phone", "address AS Address").Where(criteria)
+	err := query.Order("updated_at ASC").Find(&reports).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[participant.service.ReadAllReport] error execute query %v \n", err)
+		return nil, fmt.Errorf("failed view all data")
+	}
+	return reports, nil
 }

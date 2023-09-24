@@ -6,7 +6,10 @@
 
 package request
 
-import "mime/multipart"
+import (
+	"html/template"
+	"mime/multipart"
+)
 
 type ParticipantPaged struct {
 	Search    string `form:"search"`
@@ -66,4 +69,14 @@ type PartialDone struct {
 	Image         string `json:"image" form:"image"`
 	ImagePenerima string `json:"image_penerima" form:"image_penerima"`
 	UpdatedBy     string `json:"updated_by" form:"updated_by"`
+}
+
+type Report struct {
+	Provinsi string        `json:"provinsi"`
+	Kota     string        `json:"kota"`
+	Date     string        `json:"date"`
+	Jam      template.HTML `json:"jam"`
+	Evaluasi template.HTML `json:"evaluasi"`
+	Solusi   template.HTML `json:"solusi"`
+	Url      string
 }

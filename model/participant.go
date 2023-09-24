@@ -6,7 +6,10 @@
 
 package model
 
-import "time"
+import (
+	"html/template"
+	"time"
+)
 
 type Participant struct {
 	ID                 int        `json:"id" gorm:"primary_key"`
@@ -46,4 +49,14 @@ type TotalParticipantResponse struct {
 	TotalPartialDone   int64 `json:"total_partial_done"`
 	TotalBelumMenerima int64 `json:"total_belum_menerima"`
 	TotalDataGugur     int64 `json:"total_data_gugur"`
+}
+
+type Report struct {
+	No       int
+	NIK      string
+	Name     string
+	Phone    string
+	Image    string
+	Address  string
+	ImageB64 template.URL
 }
