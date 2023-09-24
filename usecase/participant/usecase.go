@@ -7,9 +7,18 @@
 package participant
 
 import (
+	"bumn-sembako-be/helper"
 	"bumn-sembako-be/model"
 	"bumn-sembako-be/request"
 	"bumn-sembako-be/service/participant"
+	"encoding/base64"
+	"fmt"
+	"html/template"
+	"log"
+	"net/http"
+	"os"
+	"strings"
+	"time"
 )
 
 type Usecase interface {
@@ -18,6 +27,7 @@ type Usecase interface {
 	ReadById(id int) (*model.Participant, error)
 	Update(id int, input request.UpdateParticipant) (*model.Participant, error)
 	GetTotalDashboard(req request.ParticipantFilter) (*model.TotalParticipantResponse, error)
+	Export(input request.Report) (string, error)
 }
 
 type usecase struct {
@@ -191,5 +201,96 @@ func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.Total
 	m.TotalBelumMenerima = u.service.Count(criteria)
 
 	return &m, nil
+}
 
+func (u *usecase) Export(input request.Report) (string, error) {
+	r := helper.NewRequestPdf("")
+	criteria := make(map[string]interface{})
+	if input.Provinsi != "" {
+		criteria["provinsi"] = input.Provinsi
+	}
+
+	if input.Kota != "" {
+		criteria["kota"] = input.Kota
+	}
+
+	reports, err := u.service.ReadAllReport(criteria)
+	if err != nil {
+		return "", err
+	}
+
+	for _, value := range reports {
+		if value.Image != "" {
+
+			arr := strings.SplitAfter(value.Image, "/")
+			//value.Image = "uploads/" + arr[1]
+
+			// Read the entire file into a byte slice
+			bytes, err := os.ReadFile("./uploads/" + arr[1])
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			var base64Encoding string
+
+			// Determine the content type of the image file
+			mimeType := http.DetectContentType(bytes)
+
+			// Prepend the appropriate URI scheme header depending
+			// on the MIME type
+			switch mimeType {
+			case "image/jpeg":
+				base64Encoding += "data:image/jpeg;base64,"
+			case "image/png":
+				base64Encoding += "data:image/png;base64,"
+			}
+
+			// Append the base64 encoded output
+			base64Encoding += base64.StdEncoding.EncodeToString(bytes)
+
+			// Print the full base64 representation of the image
+			value.ImageB64 = template.URL(base64Encoding)
+		}
+
+	}
+
+	templateData := struct {
+		Provinsi string
+		Kota     string
+		Date     string
+		Jam      template.HTML
+		Evaluasi template.HTML
+		Solusi   template.HTML
+		Reports  []*model.Report
+	}{
+		Provinsi: input.Provinsi,
+		Kota:     input.Kota,
+		Date:     input.Date,
+		Jam:      input.Jam,
+		Evaluasi: input.Evaluasi,
+		Solusi:   input.Solusi,
+		Reports:  reports,
+	}
+
+	//html template path
+	templatePath := "templates/report.html"
+
+	currentTime := time.Now()
+	filename := currentTime.Format("20060102150405") + "-report.pdf"
+
+	//path for download pdf
+	outputPath := "uploads/" + filename
+
+	if err := r.ParseTemplate(templatePath, templateData); err == nil {
+
+		// Generate PDF with custom arguments
+		args := []string{"no-pdf-compression"}
+
+		// Generate PDF
+		ok, _ := r.GeneratePDF(outputPath, args)
+		fmt.Println(ok, "pdf generated successfully")
+	} else {
+		fmt.Printf("error: %v", err)
+	}
+	return "image/" + filename, nil
 }
