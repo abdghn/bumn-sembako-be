@@ -65,13 +65,10 @@ func (u *usecase) Register(user request.Register) (*model.User, error) {
 	helper.HashPassword(&user.Password)
 
 	newUser := &model.User{
-		Name:           user.Name,
-		Username:       user.Username,
-		Password:       user.Password,
-		OrganizationID: user.OrganizationID,
-		Kota:           user.Kota,
-		Provinsi:       user.Provinsi,
-		Role:           ROLE,
+		Name:     user.Name,
+		Username: user.Username,
+		Password: user.Password,
+		Role:     ROLE,
 	}
 
 	m, err := u.service.Create(newUser)

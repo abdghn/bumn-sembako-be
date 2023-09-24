@@ -11,7 +11,7 @@ import "time"
 type Participant struct {
 	ID                 int        `json:"id" gorm:"primary_key"`
 	Name               string     `json:"name"`
-	NIK                string     `json:"nik"  gorm:"unique"`
+	NIK                string     `json:"nik"`
 	Gender             string     `json:"gender"`
 	Phone              string     `json:"phone"`
 	Address            string     `json:"address"`
