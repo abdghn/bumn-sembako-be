@@ -42,10 +42,14 @@ func (u *usecase) Create(user request.User) (*model.User, error) {
 	helper.HashPassword(&user.Password)
 
 	newUser := &model.User{
-		Name:     user.Name,
-		Username: user.Username,
-		Password: user.Password,
-		Role:     user.Role,
+		Name:           user.Name,
+		Username:       user.Username,
+		Password:       user.Password,
+		Role:           "ADMIN",
+		OrganizationID: user.OrganizationID,
+		Kota:           user.Kota,
+		Provinsi:       user.Provinsi,
+		RetryAttempts:  0,
 	}
 
 	m, err := u.service.Create(newUser)
@@ -65,10 +69,13 @@ func (u *usecase) Register(user request.Register) (*model.User, error) {
 	helper.HashPassword(&user.Password)
 
 	newUser := &model.User{
-		Name:     user.Name,
-		Username: user.Username,
-		Password: user.Password,
-		Role:     ROLE,
+		Name:           user.Name,
+		Username:       user.Username,
+		Password:       user.Password,
+		OrganizationID: user.OrganizationID,
+		Kota:           user.Kota,
+		Provinsi:       user.Provinsi,
+		Role:           ROLE,
 	}
 
 	m, err := u.service.Create(newUser)
