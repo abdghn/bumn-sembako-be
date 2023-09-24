@@ -6,9 +6,13 @@
 
 package model
 
-import "time"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 type User struct {
+	gorm.Model     `json:"-"`
 	ID             int          `json:"id" gorm:"primary_key"`
 	Name           string       `json:"name"`
 	Username       string       `json:"username"  gorm:"unique"`
