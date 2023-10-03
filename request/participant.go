@@ -26,7 +26,7 @@ type ParticipantPaged struct {
 type ParticipantFilter struct {
 	Provinsi string    `form:"provinsi"`
 	Kota     string    `form:"kota"`
-	Date     time.Time `form:"date"`
+	Date     time.Time `form:"date" time_format:"2006-01-02"`
 }
 
 type UpdateParticipant struct {
