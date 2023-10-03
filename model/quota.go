@@ -17,3 +17,7 @@ type Quota struct {
 	UpdatedAt time.Time  `json:"updated_at"`
 	DeletedAt *time.Time `sql:"index" json:"deleted_at"`
 }
+
+func (i *Quota) TableName() string {
+	return "quotas"
+}

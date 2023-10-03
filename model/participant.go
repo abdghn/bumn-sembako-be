@@ -49,6 +49,7 @@ type TotalParticipantResponse struct {
 	TotalPartialDone   int64 `json:"total_partial_done"`
 	TotalBelumMenerima int64 `json:"total_belum_menerima"`
 	TotalDataGugur     int64 `json:"total_data_gugur"`
+	TotalQuota         int64 `json:"total_quota"`
 }
 
 type Report struct {

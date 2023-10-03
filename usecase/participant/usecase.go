@@ -171,6 +171,7 @@ func (u *usecase) Update(id int, input request.UpdateParticipant) (*model.Partic
 func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.TotalParticipantResponse, error) {
 	var m model.TotalParticipantResponse
 	status := ""
+	quota := int64(0)
 
 	criteria := make(map[string]interface{})
 	if req.Provinsi != "" {
@@ -180,6 +181,18 @@ func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.Total
 	if req.Kota != "" {
 		criteria["kota"] = req.Kota
 	}
+
+	dataQuota, err := u.service.GetQuota(criteria)
+	if err != nil {
+		log.Println(err)
+		//return nil, err
+	} else {
+		quota = dataQuota.Total
+	}
+
+	//if !req.Date.IsZero() {
+	//
+	//}
 
 	m.TotaPenerima = u.service.Count(criteria)
 
@@ -197,6 +210,8 @@ func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.Total
 
 	status = "NOT DONE"
 	criteria["status"] = status
+
+	m.TotalQuota = quota
 
 	m.TotalBelumMenerima = u.service.Count(criteria)
 

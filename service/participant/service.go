@@ -11,6 +11,7 @@ import (
 	"bumn-sembako-be/model"
 	"bumn-sembako-be/request"
 	"fmt"
+
 	"gorm.io/gorm"
 )
 
@@ -22,6 +23,7 @@ type Service interface {
 	UpdateStatus(id int, status *request.PartialDone) (*model.Participant, error)
 	Create(participant *model.Participant) (*model.Participant, error)
 	ReadAllReport(criteria map[string]interface{}) ([]*model.Report, error)
+	GetQuota(criteria map[string]interface{}) (*model.Quota, error)
 }
 
 type service struct {
@@ -128,4 +130,16 @@ func (s *service) ReadAllReport(criteria map[string]interface{}) ([]*model.Repor
 		return nil, fmt.Errorf("failed view all data")
 	}
 	return reports, nil
+}
+
+func (s *service) GetQuota(criteria map[string]interface{}) (*model.Quota, error) {
+
+	var quota = model.Quota{}
+	err := s.db.Table("quotas").Where(criteria).First(&quota).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[participant.service.GetQuota] error execute query %v \n", err)
+		return nil, fmt.Errorf("quota by criteria is not exists")
+	}
+	return &quota, nil
 }
