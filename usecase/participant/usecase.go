@@ -222,6 +222,7 @@ func (u *usecase) Export(input request.Report) (string, error) {
 	r := helper.NewRequestPdf("")
 	var err error
 	criteria := make(map[string]interface{})
+	criteria["status"] = "DONE"
 	if input.Provinsi != "" {
 		criteria["provinsi"] = input.Provinsi
 	}
