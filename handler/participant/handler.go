@@ -173,7 +173,7 @@ func (h *handler) ExportReport(c *gin.Context) {
 	var req request.Report
 	var err error
 
-	err = c.Bind(&req)
+	err = c.ShouldBindJSON(&req)
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		helper.HandleError(c, http.StatusInternalServerError, "Oopss server someting wrong")

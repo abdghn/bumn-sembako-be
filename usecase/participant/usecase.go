@@ -220,6 +220,7 @@ func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.Total
 
 func (u *usecase) Export(input request.Report) (string, error) {
 	r := helper.NewRequestPdf("")
+	var err error
 	criteria := make(map[string]interface{})
 	if input.Provinsi != "" {
 		criteria["provinsi"] = input.Provinsi
@@ -241,9 +242,9 @@ func (u *usecase) Export(input request.Report) (string, error) {
 			//value.Image = "uploads/" + arr[1]
 
 			// Read the entire file into a byte slice
-			bytes, err := os.ReadFile("./uploads/" + arr[1])
-			if err != nil {
-				log.Fatal(err)
+			bytes, errorReadFile := os.ReadFile("./uploads/" + arr[1])
+			if errorReadFile != nil {
+				return "", errorReadFile
 			}
 
 			var base64Encoding string
@@ -302,7 +303,10 @@ func (u *usecase) Export(input request.Report) (string, error) {
 		args := []string{"no-pdf-compression"}
 
 		// Generate PDF
-		ok, _ := r.GeneratePDF(outputPath, args)
+		ok, errorGenerate := r.GeneratePDF(outputPath, args)
+		if errorGenerate != nil {
+			return "", errorGenerate
+		}
 		fmt.Println(ok, "pdf generated successfully")
 	} else {
 		fmt.Printf("error: %v", err)
