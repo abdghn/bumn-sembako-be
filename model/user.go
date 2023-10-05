@@ -15,7 +15,7 @@ type User struct {
 	gorm.Model     `json:"-"`
 	ID             int          `json:"id" gorm:"primary_key"`
 	Name           string       `json:"name"`
-	Username       string       `json:"username"  gorm:"unique"`
+	Username       string       `json:"username"`
 	Password       string       `json:"-"`
 	Role           string       `json:"role"`
 	Provinsi       string       `json:"provinsi"`

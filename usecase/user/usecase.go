@@ -11,6 +11,8 @@ import (
 	"bumn-sembako-be/model"
 	"bumn-sembako-be/request"
 	"bumn-sembako-be/service/user"
+	"fmt"
+	"gorm.io/gorm"
 )
 
 const ROLE = "STAFF-LAPANGAN"
@@ -38,6 +40,15 @@ func NewUsecase(service user.Service) Usecase {
 }
 
 func (u *usecase) Create(user request.User) (*model.User, error) {
+	getUser, err := u.service.CheckByUsername(user.Username)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		helper.CommonLogger().Error(err)
+		return nil, err
+	}
+
+	if getUser.ID > 0 {
+		return nil, fmt.Errorf("username sudah terdaftar, silahkan menggunakan username lain")
+	}
 
 	helper.HashPassword(&user.Password)
 
@@ -45,7 +56,7 @@ func (u *usecase) Create(user request.User) (*model.User, error) {
 		Name:           user.Name,
 		Username:       user.Username,
 		Password:       user.Password,
-		Role:           "ADMIN",
+		Role:           "ADMIN-EO",
 		OrganizationID: user.OrganizationID,
 		Kota:           user.Kota,
 		Provinsi:       user.Provinsi,
@@ -65,6 +76,15 @@ func (u *usecase) Create(user request.User) (*model.User, error) {
 }
 
 func (u *usecase) Register(user request.Register) (*model.User, error) {
+	getUser, err := u.service.CheckByUsername(user.Username)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		helper.CommonLogger().Error(err)
+		return nil, err
+	}
+
+	if getUser.ID > 0 {
+		return nil, fmt.Errorf("username sudah terdaftar, silahkan menggunakan username lain")
+	}
 
 	helper.HashPassword(&user.Password)
 

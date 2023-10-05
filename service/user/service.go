@@ -18,6 +18,7 @@ type Service interface {
 	Create(user *model.User) (*model.User, error)
 	ReadById(id int) (*model.User, error)
 	ReadByUsername(username string) (*model.User, error)
+	CheckByUsername(username string) (*model.User, error)
 	Update(id int, user *request.User) (*model.User, error)
 	Delete(id int) error
 	Count(criteria map[string]interface{}) int64
@@ -103,6 +104,17 @@ func (e *service) ReadByUsername(username string) (*model.User, error) {
 		helper.CommonLogger().Error(err)
 		fmt.Printf("[user.service.ReadByUsername] error execute query %v \n", err)
 		return nil, fmt.Errorf("username is not exists")
+	}
+	return &user, nil
+}
+
+func (e *service) CheckByUsername(username string) (*model.User, error) {
+	var user = model.User{}
+	err := e.db.Table("users").Where("username = ?", username).First(&user).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[user.service.CheckByUsername] error execute query %v \n", err)
+		return nil, err
 	}
 	return &user, nil
 }
