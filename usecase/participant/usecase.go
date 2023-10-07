@@ -196,8 +196,8 @@ func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.Total
 	//}
 
 	if req.Date != "" {
-		req.Date = req.Date + "T00:00:00.00Z"
-		date, err = time.Parse(time.RFC3339, req.Date)
+		stringDate := req.Date + "T00:00:00.00Z"
+		date, err = time.Parse(time.RFC3339, stringDate)
 		if err != nil {
 			return nil, err
 		}
