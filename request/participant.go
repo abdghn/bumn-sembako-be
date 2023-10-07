@@ -36,11 +36,11 @@ type UpdateParticipant struct {
 	Phone              string                `json:"phone" form:"phone"`
 	Address            string                `json:"address" form:"address"`
 	RT                 string                `json:"rt" form:"rt"`
-	RW                 string                `json:"rw" form: "rw"`
+	RW                 string                `json:"rw" form:"rw"`
 	Provinsi           string                `json:"provinsi" form:"provinsi"`
 	Kota               string                `json:"kota" form:"kota"`
 	Kecamatan          string                `json:"kecamatan" form:"kecamatan"`
-	Kelurahan          string                `json:"kelurahan" form: "kelurahan"`
+	Kelurahan          string                `json:"kelurahan" form:"kelurahan"`
 	KodePOS            string                `json:"kode_pos" form:"kode_pos"`
 	ResidenceAddress   string                `json:"residence_address" form:"residence_address"`
 	ResidenceRT        string                `json:"residence_rt" form:"residence_rt"`
