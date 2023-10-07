@@ -242,8 +242,8 @@ func (u *usecase) Export(input request.Report) (string, error) {
 	}
 
 	if input.Date != "" {
-		input.Date = input.Date + "T00:00:00.00Z"
-		date, err = time.Parse(time.RFC3339, input.Date)
+		stringDate := input.Date + "T00:00:00.00Z"
+		date, err = time.Parse(time.RFC3339, stringDate)
 		if err != nil {
 			return "", err
 		}
