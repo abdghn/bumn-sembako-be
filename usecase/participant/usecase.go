@@ -170,7 +170,8 @@ func (u *usecase) Update(id int, input request.UpdateParticipant) (*model.Partic
 
 func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.TotalParticipantResponse, error) {
 	var m model.TotalParticipantResponse
-	var date time.Time
+	//var date time.Time
+	var startDate, endDate time.Time
 	status := ""
 	quota := int64(0)
 
@@ -191,45 +192,63 @@ func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.Total
 		quota = dataQuota.Total
 	}
 
-	//if !req.Date.IsZero() {
-	//
-	//}
-
 	if req.Date != "" {
-		stringDate := req.Date + "T00:00:00.00Z"
-		date, err = time.Parse(time.RFC3339, stringDate)
+		//stringDate := req.Date + "T00:00:00.00Z"
+		//date, err = time.Parse(time.RFC3339, stringDate)
+		//if err != nil {
+		//	return nil, err
+		//}
+
+		stringStartDate := req.Date + "T00:00:00.00Z"
+		stringEndDate := req.Date + "T23:59:59.999:Z"
+		startDate, err = time.Parse(time.RFC3339, stringStartDate)
+		if err != nil {
+			return nil, err
+		}
+
+		endDate, err = time.Parse(time.RFC3339, stringEndDate)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	m.TotaPenerima = u.service.CountByDate(criteria, date)
+	//m.TotaPenerima = u.service.CountByDate(criteria, date)
+	m.TotaPenerima = u.service.CountByRangeDate(criteria, startDate, endDate)
 
 	status = "PARTIAL_DONE"
 	criteria["status"] = status
-	m.TotalPartialDone = u.service.CountByDate(criteria, date)
+	//m.TotalPartialDone = u.service.CountByDate(criteria, date)
+	m.TotalPartialDone = u.service.CountByRangeDate(criteria, startDate, endDate)
 
 	status = "REJECTED"
 	criteria["status"] = status
-	m.TotalDataGugur = u.service.CountByDate(criteria, date)
+	//m.TotalDataGugur = u.service.CountByDate(criteria, date)
+	m.TotalDataGugur = u.service.CountByRangeDate(criteria, startDate, endDate)
 
 	status = "DONE"
 	criteria["status"] = status
-	m.TotalSudahMenerima = u.service.CountByDate(criteria, date)
+	//m.TotalSudahMenerima = u.service.CountByDate(criteria, date)
+	m.TotalSudahMenerima = u.service.CountByRangeDate(criteria, startDate, endDate)
 
 	status = "NOT DONE"
 	criteria["status"] = status
 
 	m.TotalQuota = quota
 
-	m.TotalBelumMenerima = u.service.CountByDate(criteria, date)
+	if m.TotalQuota > 0 {
+		m.TotalQuota = m.TotalQuota - m.TotalSudahMenerima
+	}
+
+	//m.TotalBelumMenerima = u.service.CountByDate(criteria, date)
+	m.TotalBelumMenerima = u.service.CountByRangeDate(criteria, startDate, endDate)
 
 	return &m, nil
 }
 
 func (u *usecase) Export(input request.Report) (string, error) {
 	r := helper.NewRequestPdf("")
-	var date time.Time
+	//var date time.Time
+	var startDate, endDate time.Time
 	var err error
 	criteria := make(map[string]interface{})
 	criteria["status"] = "DONE"
@@ -237,19 +256,28 @@ func (u *usecase) Export(input request.Report) (string, error) {
 		criteria["provinsi"] = input.Provinsi
 	}
 
-	if input.Kota != "" {
-		criteria["kota"] = input.Kota
-	}
-
 	if input.Date != "" {
-		stringDate := input.Date + "T00:00:00.00Z"
-		date, err = time.Parse(time.RFC3339, stringDate)
+		//stringDate := req.Date + "T00:00:00.00Z"
+		//date, err = time.Parse(time.RFC3339, stringDate)
+		//if err != nil {
+		//	return nil, err
+		//}
+
+		stringStartDate := input.Date + "T00:00:00.00Z"
+		stringEndDate := input.Date + "T23:59:59.999:Z"
+		startDate, err = time.Parse(time.RFC3339, stringStartDate)
+		if err != nil {
+			return "", err
+		}
+
+		endDate, err = time.Parse(time.RFC3339, stringEndDate)
 		if err != nil {
 			return "", err
 		}
 	}
 
-	reports, err := u.service.ReadAllReport(criteria, date)
+	//reports, err := u.service.ReadAllReport(criteria, date)
+	reports, err := u.service.ReadAllReportByRangeDate(criteria, startDate, endDate)
 	if err != nil {
 		return "", err
 	}
