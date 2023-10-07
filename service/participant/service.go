@@ -11,6 +11,7 @@ import (
 	"bumn-sembako-be/model"
 	"bumn-sembako-be/request"
 	"fmt"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -19,10 +20,11 @@ type Service interface {
 	ReadAllBy(criteria map[string]interface{}, search string, page, size int) (*[]model.Participant, error)
 	ReadById(id int) (*model.Participant, error)
 	Count(criteria map[string]interface{}) int64
+	CountByDate(criteria map[string]interface{}, date time.Time) int64
 	Update(id int, participant request.UpdateParticipant) (*model.Participant, error)
 	UpdateStatus(id int, status *request.PartialDone) (*model.Participant, error)
 	Create(participant *model.Participant) (*model.Participant, error)
-	ReadAllReport(criteria map[string]interface{}) ([]*model.Report, error)
+	ReadAllReport(criteria map[string]interface{}, date time.Time) ([]*model.Report, error)
 	GetQuota(criteria map[string]interface{}) (*model.Quota, error)
 }
 
@@ -79,6 +81,21 @@ func (s *service) Count(criteria map[string]interface{}) int64 {
 	return result
 }
 
+func (s *service) CountByDate(criteria map[string]interface{}, date time.Time) int64 {
+	var result int64
+	query := s.db.Table("participants").Where(criteria)
+	if !date.IsZero() {
+		query.Where("updated_at < ?", date)
+
+	}
+	err := query.Count(&result).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		return 0
+	}
+	return result
+}
+
 func (e *service) Update(id int, participant request.UpdateParticipant) (*model.Participant, error) {
 	var upParticipant = model.Participant{}
 	err := e.db.Table("participants").Where("id = ?", id).First(&upParticipant).Updates(&participant).Error
@@ -119,10 +136,14 @@ func (e *service) Create(participant *model.Participant) (*model.Participant, er
 	return participant, nil
 }
 
-func (s *service) ReadAllReport(criteria map[string]interface{}) ([]*model.Report, error) {
+func (s *service) ReadAllReport(criteria map[string]interface{}, date time.Time) ([]*model.Report, error) {
 	var reports []*model.Report
 
 	query := s.db.Table("participants").Select("ROW_NUMBER() OVER (ORDER BY id) AS No", "nik as NIK", "name AS Name", "image as Image", "phone AS Phone", "address AS Address").Where(criteria)
+	if !date.IsZero() {
+		query.Where("updated_at < ?", date)
+
+	}
 	err := query.Order("updated_at ASC").Find(&reports).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)

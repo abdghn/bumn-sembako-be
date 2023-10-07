@@ -9,7 +9,6 @@ package request
 import (
 	"html/template"
 	"mime/multipart"
-	"time"
 )
 
 type ParticipantPaged struct {
@@ -24,9 +23,9 @@ type ParticipantPaged struct {
 }
 
 type ParticipantFilter struct {
-	Provinsi string    `form:"provinsi"`
-	Kota     string    `form:"kota"`
-	Date     time.Time `form:"date" time_format:"2006-01-02"`
+	Provinsi string `form:"provinsi"`
+	Kota     string `form:"kota"`
+	Date     string `form:"date"`
 }
 
 type UpdateParticipant struct {

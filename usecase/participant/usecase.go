@@ -170,6 +170,7 @@ func (u *usecase) Update(id int, input request.UpdateParticipant) (*model.Partic
 
 func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.TotalParticipantResponse, error) {
 	var m model.TotalParticipantResponse
+	var date time.Time
 	status := ""
 	quota := int64(0)
 
@@ -194,32 +195,41 @@ func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.Total
 	//
 	//}
 
-	m.TotaPenerima = u.service.Count(criteria)
+	if req.Date != "" {
+		req.Date = req.Date + "T00:00:00.00Z"
+		date, err = time.Parse(time.RFC3339, req.Date)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	m.TotaPenerima = u.service.CountByDate(criteria, date)
 
 	status = "PARTIAL_DONE"
 	criteria["status"] = status
-	m.TotalPartialDone = u.service.Count(criteria)
+	m.TotalPartialDone = u.service.CountByDate(criteria, date)
 
 	status = "REJECTED"
 	criteria["status"] = status
-	m.TotalDataGugur = u.service.Count(criteria)
+	m.TotalDataGugur = u.service.CountByDate(criteria, date)
 
 	status = "DONE"
 	criteria["status"] = status
-	m.TotalSudahMenerima = u.service.Count(criteria)
+	m.TotalSudahMenerima = u.service.CountByDate(criteria, date)
 
 	status = "NOT DONE"
 	criteria["status"] = status
 
 	m.TotalQuota = quota
 
-	m.TotalBelumMenerima = u.service.Count(criteria)
+	m.TotalBelumMenerima = u.service.CountByDate(criteria, date)
 
 	return &m, nil
 }
 
 func (u *usecase) Export(input request.Report) (string, error) {
 	r := helper.NewRequestPdf("")
+	var date time.Time
 	var err error
 	criteria := make(map[string]interface{})
 	criteria["status"] = "DONE"
@@ -231,7 +241,15 @@ func (u *usecase) Export(input request.Report) (string, error) {
 		criteria["kota"] = input.Kota
 	}
 
-	reports, err := u.service.ReadAllReport(criteria)
+	if input.Date != "" {
+		input.Date = input.Date + "T00:00:00.00Z"
+		date, err = time.Parse(time.RFC3339, input.Date)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	reports, err := u.service.ReadAllReport(criteria, date)
 	if err != nil {
 		return "", err
 	}
