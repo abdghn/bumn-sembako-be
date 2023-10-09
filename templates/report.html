@@ -196,7 +196,7 @@
                 </div>
             </div>
         </div>
-        <div style="margin: 10% auto; width: 42%;">
+        <div style="margin: 10% auto; width: 60%;">
             <h1 style="padding-top: 3pt; padding-left: 6pt; text-indent: 0pt; text-align: left;">Lampiran Foto Penyaluran Peserta</h1>
             {{range .Reports}}
             <p class="s4" style="padding-top: 9pt; padding-left: 6pt; text-indent: 0pt; text-align: left;">{{.No}}. </p>
@@ -212,10 +212,42 @@
                                 />
                             </td>
                             <td>
-                                <span class="p" style="margin-left: 20px">NIK : {{.NIK}}</span>
-                                <p style="padding-top: 7pt; padding-left: 0; text-indent: 0pt; line-height: 152%; text-align: left; margin-left: 20px">NAMA : {{.Name}}</p>
+                                <!-- <span class="p" style="margin-left: 20px">NIK : {{.NIK}}</span> -->
+                                <div style="margin-left: 20px; display: flex; margin-bottom: 10px;">
+                                    <div style="display: block;">
+                                        <b>NIK:</b>
+                                    </div>
+                                    <div style="margin-left: 8px; letter-spacing: 1px;">
+                                        {{.NIK}}
+                                    </div>
+                                </div>
+                                <div style="margin-left: 20px; display: flex; margin-bottom: 10px">
+                                    <div style="display: block;">
+                                        <b>NAMA:</b>
+                                    </div>
+                                    <div style="margin-left: 8px; letter-spacing: 1px; ">
+                                        {{.Name}}
+                                    </div>
+                                </div>
+                                <div style="margin-left: 20px; display: flex; margin-bottom: 10px">
+                                    <div style="display: block;">
+                                        <b>NO HP:</b>
+                                    </div>
+                                    <div style="margin-left: 8px; letter-spacing: 1px;">
+                                        {{.Phone}}
+                                    </div>
+                                </div>
+                                <div style="margin-left: 20px; display: flex; margin-bottom: 10px">
+                                    <div style="display: block;">
+                                        <b>ALAMAT:</b>
+                                    </div>
+                                    <div style="margin-left: 8px; letter-spacing: 1px;">
+                                        {{.Address}}
+                                    </div>
+                                </div>
+                                <!-- <p style="padding-top: 7pt; padding-left: 0; text-indent: 0pt; line-height: 152%; text-align: left; margin-left: 20px">NAMA : {{.Name}}</p>
                                 <p style="padding-top: 7pt; padding-left: 0; text-indent: 0pt; line-height: 152%; text-align: left; margin-left: 20px">NO HP : {{.Phone}}</p>
-                                <p style="padding-top: 7pt; padding-left: 0; text-indent: 0pt; line-height: 152%; text-align: left; margin-left: 20px">NO HP : {{.Address}}</p>
+                                <p style="padding-top: 7pt; padding-left: 0; text-indent: 0pt; line-height: 152%; text-align: left; margin-left: 20px">ALAMAT : {{.Address}}</p> -->
                             </td>
                         </tr>
                     </table>
