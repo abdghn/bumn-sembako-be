@@ -102,7 +102,7 @@ func (s *service) CountByRangeDate(criteria map[string]interface{}, startDate, e
 	var result int64
 	query := s.db.Table("participants").Where(criteria)
 	if !startDate.IsZero() && !endDate.IsZero() {
-		query.Where("BETWEEN updated_at <= ? AND >= updated_at  ?", startDate, endDate)
+		query.Where("updated_at <= ? AND updated_at >=  ?", endDate, startDate)
 
 	}
 	err := query.Count(&result).Error
@@ -175,7 +175,7 @@ func (s *service) ReadAllReportByRangeDate(criteria map[string]interface{}, star
 
 	query := s.db.Table("participants").Select("ROW_NUMBER() OVER (ORDER BY id) AS No", "nik as NIK", "name AS Name", "image as Image", "phone AS Phone", "address AS Address").Where(criteria)
 	if !startDate.IsZero() && !endDate.IsZero() {
-		query.Where("BETWEEN updated_at <= ? AND >= updated_at  ?", startDate, endDate)
+		query.Where("updated_at <= ? AND updated_at >=  ?", endDate, startDate)
 
 	}
 	err := query.Order("updated_at ASC").Find(&reports).Error
@@ -190,11 +190,11 @@ func (s *service) ReadAllReportByRangeDate(criteria map[string]interface{}, star
 func (s *service) GetQuota(criteria map[string]interface{}) (*model.Quota, error) {
 
 	var quota = model.Quota{}
-	err := s.db.Table("quotas").Where(criteria).First(&quota).Error
+	err := s.db.Table("quotas").Where(criteria).Find(&quota).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		fmt.Printf("[participant.service.GetQuota] error execute query %v \n", err)
-		return nil, fmt.Errorf("quota by criteria is not exists")
+		return nil, err
 	}
 	return &quota, nil
 }

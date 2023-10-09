@@ -13,8 +13,8 @@ import (
 	"bumn-sembako-be/service/participant"
 	"encoding/base64"
 	"fmt"
+	"gorm.io/gorm"
 	"html/template"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -185,10 +185,11 @@ func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.Total
 	}
 
 	dataQuota, err := u.service.GetQuota(criteria)
-	if err != nil {
-		log.Println(err)
-		//return nil, err
-	} else {
+	if err != nil && err.Error() != gorm.ErrRecordNotFound.Error() {
+		return nil, err
+	}
+
+	if dataQuota.ID > 0 {
 		quota = dataQuota.Total
 	}
 
@@ -200,7 +201,7 @@ func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.Total
 		//}
 
 		stringStartDate := req.Date + "T00:00:00.00Z"
-		stringEndDate := req.Date + "T23:59:59.999:Z"
+		stringEndDate := req.Date + "T23:59:59.999Z"
 		startDate, err = time.Parse(time.RFC3339, stringStartDate)
 		if err != nil {
 			return nil, err
@@ -264,7 +265,7 @@ func (u *usecase) Export(input request.Report) (string, error) {
 		//}
 
 		stringStartDate := input.Date + "T00:00:00.00Z"
-		stringEndDate := input.Date + "T23:59:59.999:Z"
+		stringEndDate := input.Date + "T23:59:59.999Z"
 		startDate, err = time.Parse(time.RFC3339, stringStartDate)
 		if err != nil {
 			return "", err
