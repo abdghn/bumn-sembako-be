@@ -183,8 +183,6 @@ func (e *service) Create(participant *model.Participant) (*model.Participant, er
 		return nil, fmt.Errorf("failed insert data")
 	}
 
-	helper.CommonLogger().Error(err)
-
 	tx.Commit()
 
 	return participant, nil
@@ -246,8 +244,6 @@ func (s *service) CreateLog(m *model.ImportLog) (*model.ImportLog, error) {
 		fmt.Printf("[user.service.CreateLog] error execute query %v \n", err)
 		return nil, fmt.Errorf("failed insert data")
 	}
-
-	helper.CommonLogger().Error(err)
 
 	tx.Commit()
 
