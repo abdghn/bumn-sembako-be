@@ -83,7 +83,6 @@ func main() {
 	v1.POST("register", uh.Register)
 	v1.GET("dashboard", ph.ViewDashboard)
 	v1.POST("report/export", ph.ExportReport)
-	v1.POST("import", ph.BulkCreate)
 	//
 	user := v1.Group("/user")
 	{
