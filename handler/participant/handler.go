@@ -21,10 +21,12 @@ import (
 
 type Handler interface {
 	ViewParticipants(c *gin.Context)
+	ViewLogs(c *gin.Context)
 	ViewParticipant(c *gin.Context)
 	Update(c *gin.Context)
 	ViewDashboard(c *gin.Context)
 	ExportReport(c *gin.Context)
+	BulkCreate(c *gin.Context)
 }
 
 type handler struct {
@@ -59,6 +61,31 @@ func (h *handler) ViewParticipants(c *gin.Context) {
 	helper.HandlePagedSuccess(c, participants, req.Page, req.Size, countParticipants)
 
 }
+
+func (h *handler) ViewLogs(c *gin.Context) {
+	var req request.ParticipantPaged
+	var err error
+
+	err = c.ShouldBindQuery(&req)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, "Oopss server someting wrong")
+		return
+	}
+
+	participants, err := h.usecase.ReadAllLogBy(req)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	countParticipants := h.usecase.CountLogs(req)
+
+	helper.HandlePagedSuccess(c, participants, req.Page, req.Size, countParticipants)
+
+}
+
 
 func (h *handler) ViewParticipant(c *gin.Context) {
 	idStr := c.Param("id")
@@ -220,5 +247,51 @@ func (h *handler) ExportReport(c *gin.Context) {
 	//log.Println("Done")
 
 	helper.HandleSuccess(c, path)
+
+}
+
+func (h *handler) BulkCreate(c *gin.Context)  {
+	var req request.ImportParticipant
+	var err error
+	err = c.ShouldBind(&req)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, "Oopss server someting wrong")
+		return
+	}
+
+	path := "./uploads"
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		_ = os.Mkdir(path, os.ModePerm)
+	}
+
+	file := req.File
+
+	// generate new file name
+	ext := filepath.Ext(file.Filename)
+	currentTime := time.Now()
+	filename := currentTime.Format("20060102150405") + ext
+
+	tmpFile := path + "/" + filename
+	if err = c.SaveUploadedFile(file, tmpFile); err != nil {
+		helper.HandleError(c, http.StatusBadRequest, "failed to saving image")
+		return
+	}
+
+	req.Name = file.Filename
+	req.TmpPath = tmpFile
+
+	result, err :=h.usecase.BulkCreate(req)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	helper.HandleSuccess(c, result)
+
+}
+
+func (h *handler) ViewAllImportLog(c *gin.Context)  {
 
 }

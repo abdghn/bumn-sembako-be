@@ -76,12 +76,14 @@ func main() {
 	ru := regionUsecase.NewUsecase(rs)
 	rh := regionHandler.NewHandler(ru)
 
+	router.StaticFS("/bumn-sembako/api/template", http.Dir("templates"))
 	v1.StaticFS("/image", http.Dir("uploads"))
 
 	v1.POST("login", uh.Login)
 	v1.POST("register", uh.Register)
 	v1.GET("dashboard", ph.ViewDashboard)
 	v1.POST("report/export", ph.ExportReport)
+	v1.POST("import", ph.BulkCreate)
 	//
 	user := v1.Group("/user")
 	{
@@ -97,6 +99,8 @@ func main() {
 		participant.GET("", ph.ViewParticipants)
 		participant.GET("/:id", ph.ViewParticipant)
 		participant.PUT("/:id", ph.Update)
+		participant.POST("import", ph.BulkCreate)
+		participant.GET("import", ph.ViewLogs)
 	}
 
 	region := v1.Group("/region")

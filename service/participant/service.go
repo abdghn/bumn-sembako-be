@@ -18,8 +18,10 @@ import (
 
 type Service interface {
 	ReadAllBy(criteria map[string]interface{}, search string, page, size int) (*[]model.Participant, error)
+	ReadAllLogBy(criteria map[string]interface{}, search string, page, size int) ([]model.ImportLog, error)
 	ReadById(id int) (*model.Participant, error)
 	Count(criteria map[string]interface{}) int64
+	CountLogs(criteria map[string]interface{}) int64
 	CountByDate(criteria map[string]interface{}, date time.Time) int64
 	CountByRangeDate(criteria map[string]interface{}, startDate, endDate time.Time) int64
 	Update(id int, participant request.UpdateParticipant) (*model.Participant, error)
@@ -28,6 +30,8 @@ type Service interface {
 	ReadAllReport(criteria map[string]interface{}, date time.Time) ([]*model.Report, error)
 	ReadAllReportByRangeDate(criteria map[string]interface{}, startDate, endDate time.Time) ([]*model.Report, error)
 	GetQuota(criteria map[string]interface{}) (*model.Quota, error)
+	CreateLog(m *model.ImportLog) (*model.ImportLog, error)
+
 }
 
 type service struct {
@@ -62,6 +66,29 @@ func (e *service) ReadAllBy(criteria map[string]interface{}, search string, page
 	return &participants, nil
 }
 
+func (e *service) ReadAllLogBy(criteria map[string]interface{}, search string, page, size int) ([]model.ImportLog, error) {
+	var logs []model.ImportLog
+
+	query := e.db.Where(criteria)
+
+	if search != "" {
+		query.Where("name LIKE ?", search+"%")
+	}
+
+	if page == 0 || size == 0 {
+		page, size = -1, -1
+	}
+
+	limit, offset := helper.GetLimitOffset(page, size)
+	err := query.Offset(offset).Order("created_at DESC").Limit(limit).Find(&logs).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[participant.service.ReadAllLogBy] error execute query %v \n", err)
+		return nil, fmt.Errorf("failed view all data")
+	}
+	return logs, nil
+}
+
 func (s *service) ReadById(id int) (*model.Participant, error) {
 	var participant = model.Participant{}
 	err := s.db.Table("participants").Where("id = ?", id).First(&participant).Error
@@ -76,6 +103,16 @@ func (s *service) ReadById(id int) (*model.Participant, error) {
 func (s *service) Count(criteria map[string]interface{}) int64 {
 	var result int64
 	err := s.db.Table("participants").Where(criteria).Count(&result).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		return 0
+	}
+	return result
+}
+
+func (s *service) CountLogs(criteria map[string]interface{}) int64 {
+	var result int64
+	err := s.db.Table("import_logs").Where(criteria).Count(&result).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		return 0
@@ -197,4 +234,22 @@ func (s *service) GetQuota(criteria map[string]interface{}) (*model.Quota, error
 		return nil, err
 	}
 	return &quota, nil
+}
+
+func (s *service) CreateLog(m *model.ImportLog) (*model.ImportLog, error) {
+	tx := s.db.Begin()
+	defer tx.Rollback()
+
+	err := tx.Save(&m).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[user.service.CreateLog] error execute query %v \n", err)
+		return nil, fmt.Errorf("failed insert data")
+	}
+
+	helper.CommonLogger().Error(err)
+
+	tx.Commit()
+
+	return m, nil
 }
