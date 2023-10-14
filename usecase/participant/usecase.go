@@ -411,7 +411,8 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 	newFile.SetCellValue(sheet1Name, "R1", "Kecamatan Domisili")
 	newFile.SetCellValue(sheet1Name, "S1", "Kelurahan Domisili")
 	newFile.SetCellValue(sheet1Name, "T1", "Kode Pos Domisili")
-	newFile.SetCellValue(sheet1Name, "U1", "Catatan")
+	newFile.SetCellValue(sheet1Name, "U1", "Status")
+	newFile.SetCellValue(sheet1Name, "V1", "Catatan")
 
 	var rows []*request.ParticipantInput
 	for i := 2; i < 3000; i++ {
