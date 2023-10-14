@@ -437,6 +437,7 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 			ResidenceKecamatan: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("R%d", i)),
 			ResidenceKelurahan: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("S%d", i)),
 			ResidenceKodePOS: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("T%d", i)),
+			Status: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("U%d", i)),
 		}
 
 
@@ -533,6 +534,10 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 			note = append(note, "Domisili Kode POS Kosong \n")
 		}
 
+		if row.Status == "" {
+			note = append(note, "Status Kosong \n")
+		}
+
 		if len(note) == 0 {
 			newParticipant := &model.Participant{
 				Name:               row.Name,
@@ -555,7 +560,7 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 				ResidenceKecamatan: row.ResidenceKecamatan,
 				ResidenceKelurahan: row.ResidenceKelurahan,
 				ResidenceKodePOS:   row.ResidenceKodePOS,
-				Status:             "NOT DONE",
+				Status:            row.Status,
 			}
 
 			_, err = u.service.Create(newParticipant)
@@ -597,7 +602,8 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 			newFile.SetCellValue(sheet1Name, fmt.Sprintf("R%d", i+2),row.ResidenceKecamatan)
 			newFile.SetCellValue(sheet1Name, fmt.Sprintf("S%d", i+2),row.ResidenceKelurahan)
 			newFile.SetCellValue(sheet1Name, fmt.Sprintf("T%d", i+2),row.ResidenceKodePOS)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("U%d", i+2),row.Note)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("U%d", i+2),row.Status)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("V%d", i+2),row.Note)
 		}
 
 

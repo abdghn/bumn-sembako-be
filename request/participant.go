@@ -49,6 +49,7 @@ type ParticipantInput struct {
 	ResidenceKecamatan string `json:"residence_kecamatan" form:"residence_kecamatan"`
 	ResidenceKelurahan string `json:"residence_kelurahan" form:"residence_kelurahan"`
 	ResidenceKodePOS   string `json:"residence_kode_pos" form:"residence_kode_pos"`
+	Status             string `json:"status" form:"status"`
 	Note               string `json:"note" form:"note"`
 }
 
