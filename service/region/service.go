@@ -14,10 +14,10 @@ import (
 )
 
 type Service interface {
-	ReadAllProvinceBy(criteria map[string]interface{}, search string) (*[]model.Province, error)
-	ReadAllRegencyBy(criteria map[string]interface{}, search string) (*[]model.Regency, error)
-	ReadAllDistrictBy(criteria map[string]interface{}, search string) (*[]model.District, error)
-	ReadAllVillageBy(criteria map[string]interface{}, search string) (*[]model.Village, error)
+	ReadAllProvinceBy(criteria map[string]interface{}, search string) ([]*model.Province, error)
+	ReadAllRegencyBy(criteria map[string]interface{}, search string) ([]*model.Regency, error)
+	ReadAllDistrictBy(criteria map[string]interface{}, search string) ([]*model.District, error)
+	ReadAllVillageBy(criteria map[string]interface{}, search string) ([]*model.Village, error)
 }
 
 type service struct {
@@ -29,8 +29,8 @@ func NewService(db *gorm.DB) Service {
 
 }
 
-func (s *service) ReadAllProvinceBy(criteria map[string]interface{}, search string) (*[]model.Province, error) {
-	var provincies []model.Province
+func (s *service) ReadAllProvinceBy(criteria map[string]interface{}, search string) ([]*model.Province, error) {
+	var provincies []*model.Province
 
 	query := s.db.Where(criteria)
 
@@ -44,11 +44,11 @@ func (s *service) ReadAllProvinceBy(criteria map[string]interface{}, search stri
 		fmt.Printf("[region.service.ReadAllProvinceBy] error execute query %v \n", err)
 		return nil, fmt.Errorf("failed view all data")
 	}
-	return &provincies, nil
+	return provincies, nil
 }
 
-func (s *service) ReadAllRegencyBy(criteria map[string]interface{}, search string) (*[]model.Regency, error) {
-	var regencies []model.Regency
+func (s *service) ReadAllRegencyBy(criteria map[string]interface{}, search string) ([]*model.Regency, error) {
+	var regencies []*model.Regency
 
 	query := s.db.Where(criteria)
 
@@ -62,11 +62,11 @@ func (s *service) ReadAllRegencyBy(criteria map[string]interface{}, search strin
 		fmt.Printf("[region.service.ReadAllRegencyBy] error execute query %v \n", err)
 		return nil, fmt.Errorf("failed view all data")
 	}
-	return &regencies, nil
+	return regencies, nil
 }
 
-func (s *service) ReadAllDistrictBy(criteria map[string]interface{}, search string) (*[]model.District, error) {
-	var districts []model.District
+func (s *service) ReadAllDistrictBy(criteria map[string]interface{}, search string) ([]*model.District, error) {
+	var districts []*model.District
 
 	query := s.db.Where(criteria)
 
@@ -80,11 +80,11 @@ func (s *service) ReadAllDistrictBy(criteria map[string]interface{}, search stri
 		fmt.Printf("[region.service.ReadAllDistrictBy] error execute query %v \n", err)
 		return nil, fmt.Errorf("failed view all data")
 	}
-	return &districts, nil
+	return districts, nil
 }
 
-func (s *service) ReadAllVillageBy(criteria map[string]interface{}, search string) (*[]model.Village, error) {
-	var villages []model.Village
+func (s *service) ReadAllVillageBy(criteria map[string]interface{}, search string) ([]*model.Village, error) {
+	var villages []*model.Village
 
 	query := s.db.Where(criteria)
 
@@ -98,5 +98,5 @@ func (s *service) ReadAllVillageBy(criteria map[string]interface{}, search strin
 		fmt.Printf("[region.service.ReadAllVillageBy] error execute query %v \n", err)
 		return nil, fmt.Errorf("failed view all data")
 	}
-	return &villages, nil
+	return villages, nil
 }

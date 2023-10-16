@@ -11,6 +11,7 @@ import (
 	"bumn-sembako-be/model"
 	"bumn-sembako-be/request"
 	"bumn-sembako-be/service/participant"
+	"bumn-sembako-be/service/region"
 	"encoding/base64"
 	"fmt"
 	"html/template"
@@ -37,10 +38,11 @@ type Usecase interface {
 
 type usecase struct {
 	service participant.Service
+	regionService region.Service
 }
 
-func NewUsecase(service participant.Service) Usecase {
-	return &usecase{service: service}
+func NewUsecase(service participant.Service, regionService region.Service) Usecase {
+	return &usecase{service: service, regionService: regionService}
 
 }
 
@@ -415,7 +417,7 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 	newFile.SetCellValue(sheet1Name, "V1", "Catatan")
 
 	var rows []*request.ParticipantInput
-	for i := 2; i < 3000; i++ {
+	for i := 2; i < 20000; i++ {
 		var note []string
 		row := &request.ParticipantInput{
 			Name:               xlsx.GetCellValue(sheet1Name, fmt.Sprintf("A%d", i)),
@@ -441,8 +443,8 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 			Status:             xlsx.GetCellValue(sheet1Name, fmt.Sprintf("U%d", i)),
 		}
 
-		if row.Name == "" && row.NIK == "" {
-			continue
+		if row.Name == "" && row.NIK == "" && row.Gender == "" {
+			break;
 		}
 
 		if row.Name == "" {
@@ -451,10 +453,10 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 
 		if row.NIK == "" {
 			note = append(note, "NIK Kosong \n")
-		} else {
-			if len(row.NIK) > 16 {
-				note = append(note, "NIK lebih dari 16 karakter \n")
-			}
+		}
+
+		if len(row.NIK) > 16 {
+			note = append(note, "NIK lebih dari 16 karakter \n")
 		}
 
 		if row.Gender == "" {
@@ -463,10 +465,10 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 
 		if row.Phone == "" {
 			note = append(note, "No Handphone Kosong \n")
-		} else {
-			if len(row.Phone) > 15 {
-				note = append(note, "No Handphone dari 16 karakter \n")
-			}
+		}
+
+		if len(row.Phone) > 15 {
+			note = append(note, "No Handphone dari 15 karakter \n")
 		}
 
 		if row.Address == "" {

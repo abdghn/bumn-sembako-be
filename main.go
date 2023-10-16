@@ -68,13 +68,13 @@ func main() {
 	uu := userUsecase.NewUsecase(us)
 	uh := userHandler.NewHandler(uu)
 
-	ps := participantService.NewService(db)
-	pu := participantUsecase.NewUsecase(ps)
-	ph := participantHandler.NewHandler(pu)
-
 	rs := regionService.NewService(db)
 	ru := regionUsecase.NewUsecase(rs)
 	rh := regionHandler.NewHandler(ru)
+
+	ps := participantService.NewService(db)
+	pu := participantUsecase.NewUsecase(ps, rs)
+	ph := participantHandler.NewHandler(pu)
 
 	router.StaticFS("/bumn-sembako/api/template", http.Dir("templates"))
 	v1.StaticFS("/image", http.Dir("uploads"))

@@ -13,10 +13,10 @@ import (
 )
 
 type Usecase interface {
-	ReadAllProvinceBy(req request.RegionPaged) (*[]model.Province, error)
-	ReadAllRegencyBy(req request.RegionPaged) (*[]model.Regency, error)
-	ReadAllDistrictBy(req request.RegionPaged) (*[]model.District, error)
-	ReadAllVillageBy(req request.RegionPaged) (*[]model.Village, error)
+	ReadAllProvinceBy(req request.RegionPaged) ([]*model.Province, error)
+	ReadAllRegencyBy(req request.RegionPaged) ([]*model.Regency, error)
+	ReadAllDistrictBy(req request.RegionPaged) ([]*model.District, error)
+	ReadAllVillageBy(req request.RegionPaged) ([]*model.Village, error)
 }
 
 type usecase struct {
@@ -28,13 +28,13 @@ func NewUsecase(service region.Service) Usecase {
 
 }
 
-func (u *usecase) ReadAllProvinceBy(req request.RegionPaged) (*[]model.Province, error) {
+func (u *usecase) ReadAllProvinceBy(req request.RegionPaged) ([]*model.Province, error) {
 	criteria := make(map[string]interface{})
 	return u.service.ReadAllProvinceBy(criteria, req.Search)
 
 }
 
-func (u *usecase) ReadAllRegencyBy(req request.RegionPaged) (*[]model.Regency, error) {
+func (u *usecase) ReadAllRegencyBy(req request.RegionPaged) ([]*model.Regency, error) {
 	criteria := make(map[string]interface{})
 	criteria["province_id"] = req.ProvinceID
 
@@ -42,14 +42,14 @@ func (u *usecase) ReadAllRegencyBy(req request.RegionPaged) (*[]model.Regency, e
 
 }
 
-func (u *usecase) ReadAllDistrictBy(req request.RegionPaged) (*[]model.District, error) {
+func (u *usecase) ReadAllDistrictBy(req request.RegionPaged) ([]*model.District, error) {
 	criteria := make(map[string]interface{})
 	criteria["regency_id"] = req.RegencyID
 
 	return u.service.ReadAllDistrictBy(criteria, req.Search)
 }
 
-func (u *usecase) ReadAllVillageBy(req request.RegionPaged) (*[]model.Village, error) {
+func (u *usecase) ReadAllVillageBy(req request.RegionPaged) ([]*model.Village, error) {
 	criteria := make(map[string]interface{})
 	criteria["district_id"] = req.DistrictID
 
