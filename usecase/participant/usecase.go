@@ -13,13 +13,14 @@ import (
 	"bumn-sembako-be/service/participant"
 	"encoding/base64"
 	"fmt"
-	"github.com/360EntSecGroup-Skylar/excelize"
-	"gorm.io/gorm"
 	"html/template"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/360EntSecGroup-Skylar/excelize"
+	"gorm.io/gorm"
 )
 
 type Usecase interface {
@@ -72,7 +73,6 @@ func (u *usecase) ReadAllLogBy(req request.ParticipantPaged) ([]model.ImportLog,
 	criteria := make(map[string]interface{})
 	return u.service.ReadAllLogBy(criteria, req.Search, req.Page, req.Size)
 }
-
 
 func (u *usecase) ReadById(id int) (*model.Participant, error) {
 	return u.service.ReadById(id)
@@ -379,12 +379,12 @@ func (u *usecase) Export(input request.Report) (string, error) {
 
 func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, error) {
 	//var m model.ImportLog
-	var successRows,totalRows,failedRows int
+	var successRows, totalRows, failedRows int
 	var status string
 	newFile := excelize.NewFile()
 
 	xlsx, err := excelize.OpenFile(req.TmpPath)
-	if err != nil  {
+	if err != nil {
 		return nil, fmt.Errorf("error when open file: %v", err)
 	}
 
@@ -418,34 +418,36 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 	for i := 2; i < 3000; i++ {
 		var note []string
 		row := &request.ParticipantInput{
-			Name:   xlsx.GetCellValue(sheet1Name, fmt.Sprintf("A%d", i)),
-			NIK:  xlsx.GetCellValue(sheet1Name, fmt.Sprintf("B%d", i)),
-			Gender: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("C%d", i)),
-			Phone: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("D%d", i)),
-			Address: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("E%d", i)),
-			RT: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("F%d", i)),
-			RW: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("G%d", i)),
-			Provinsi: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("H%d", i)),
-			Kota: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("I%d", i)),
-			Kecamatan: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("J%d", i)),
-			Kelurahan: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("K%d", i)),
-			KodePOS: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("L%d", i)),
-			ResidenceAddress: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("M%d", i)),
-			ResidenceRT: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("N%d", i)),
-			ResidenceRW: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("O%d", i)),
-			ResidenceProvinsi: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("P%d", i)),
-			ResidenceKota: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("Q%d", i)),
+			Name:               xlsx.GetCellValue(sheet1Name, fmt.Sprintf("A%d", i)),
+			NIK:                xlsx.GetCellValue(sheet1Name, fmt.Sprintf("B%d", i)),
+			Gender:             xlsx.GetCellValue(sheet1Name, fmt.Sprintf("C%d", i)),
+			Phone:              xlsx.GetCellValue(sheet1Name, fmt.Sprintf("D%d", i)),
+			Address:            xlsx.GetCellValue(sheet1Name, fmt.Sprintf("E%d", i)),
+			RT:                 xlsx.GetCellValue(sheet1Name, fmt.Sprintf("F%d", i)),
+			RW:                 xlsx.GetCellValue(sheet1Name, fmt.Sprintf("G%d", i)),
+			Provinsi:           xlsx.GetCellValue(sheet1Name, fmt.Sprintf("H%d", i)),
+			Kota:               xlsx.GetCellValue(sheet1Name, fmt.Sprintf("I%d", i)),
+			Kecamatan:          xlsx.GetCellValue(sheet1Name, fmt.Sprintf("J%d", i)),
+			Kelurahan:          xlsx.GetCellValue(sheet1Name, fmt.Sprintf("K%d", i)),
+			KodePOS:            xlsx.GetCellValue(sheet1Name, fmt.Sprintf("L%d", i)),
+			ResidenceAddress:   xlsx.GetCellValue(sheet1Name, fmt.Sprintf("M%d", i)),
+			ResidenceRT:        xlsx.GetCellValue(sheet1Name, fmt.Sprintf("N%d", i)),
+			ResidenceRW:        xlsx.GetCellValue(sheet1Name, fmt.Sprintf("O%d", i)),
+			ResidenceProvinsi:  xlsx.GetCellValue(sheet1Name, fmt.Sprintf("P%d", i)),
+			ResidenceKota:      xlsx.GetCellValue(sheet1Name, fmt.Sprintf("Q%d", i)),
 			ResidenceKecamatan: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("R%d", i)),
 			ResidenceKelurahan: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("S%d", i)),
-			ResidenceKodePOS: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("T%d", i)),
-			Status: xlsx.GetCellValue(sheet1Name, fmt.Sprintf("U%d", i)),
+			ResidenceKodePOS:   xlsx.GetCellValue(sheet1Name, fmt.Sprintf("T%d", i)),
+			Status:             xlsx.GetCellValue(sheet1Name, fmt.Sprintf("U%d", i)),
 		}
 
-
-		if row.Name == "" &&  row.NIK == "" {
+		if row.Name == "" && row.NIK == "" {
 			continue
 		}
 
+		if row.Name == "" {
+			note = append(note, "Nama Kosong \n")
+		}
 
 		if row.NIK == "" {
 			note = append(note, "NIK Kosong \n")
@@ -455,13 +457,9 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 			}
 		}
 
-
-
 		if row.Gender == "" {
 			note = append(note, "Jenis Kelamin Kosong \n")
 		}
-
-
 
 		if row.Phone == "" {
 			note = append(note, "No Handphone Kosong \n")
@@ -561,7 +559,7 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 				ResidenceKecamatan: row.ResidenceKecamatan,
 				ResidenceKelurahan: row.ResidenceKelurahan,
 				ResidenceKodePOS:   row.ResidenceKodePOS,
-				Status:            row.Status,
+				Status:             row.Status,
 			}
 
 			_, err = u.service.Create(newParticipant)
@@ -573,7 +571,7 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 			index := 2
 			row.Note = strings.Join(note, ",")
 			failedRows++
-			rows = append(rows,row)
+			rows = append(rows, row)
 			index++
 
 		}
@@ -584,30 +582,28 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 
 		for i, row := range rows {
 			newFile.SetCellValue(sheet1Name, fmt.Sprintf("A%d", i+2), row.Name)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("B%d", i+2),row.NIK)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("C%d", i+2),row.Gender)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("D%d", i+2),row.Phone)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("E%d", i+2),row.Address)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("F%d", i+2),row.RT)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("G%d", i+2),row.RW)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("H%d", i+2),row.Provinsi)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("I%d", i+2),row.Kota)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("J%d", i+2),row.Kecamatan)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("K%d", i+2),row.Kelurahan)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("L%d", i+2),row.KodePOS)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("M%d", i+2),row.ResidenceAddress)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("N%d", i+2),row.ResidenceRT)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("O%d", i+2),row.ResidenceRW)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("P%d", i+2),row.ResidenceProvinsi)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("Q%d", i+2),row.ResidenceKota)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("R%d", i+2),row.ResidenceKecamatan)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("S%d", i+2),row.ResidenceKelurahan)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("T%d", i+2),row.ResidenceKodePOS)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("U%d", i+2),row.Status)
-			newFile.SetCellValue(sheet1Name, fmt.Sprintf("V%d", i+2),row.Note)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("B%d", i+2), row.NIK)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("C%d", i+2), row.Gender)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("D%d", i+2), row.Phone)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("E%d", i+2), row.Address)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("F%d", i+2), row.RT)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("G%d", i+2), row.RW)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("H%d", i+2), row.Provinsi)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("I%d", i+2), row.Kota)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("J%d", i+2), row.Kecamatan)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("K%d", i+2), row.Kelurahan)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("L%d", i+2), row.KodePOS)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("M%d", i+2), row.ResidenceAddress)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("N%d", i+2), row.ResidenceRT)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("O%d", i+2), row.ResidenceRW)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("P%d", i+2), row.ResidenceProvinsi)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("Q%d", i+2), row.ResidenceKota)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("R%d", i+2), row.ResidenceKecamatan)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("S%d", i+2), row.ResidenceKelurahan)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("T%d", i+2), row.ResidenceKodePOS)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("U%d", i+2), row.Status)
+			newFile.SetCellValue(sheet1Name, fmt.Sprintf("V%d", i+2), row.Note)
 		}
-
-
 
 		path := "./uploads"
 		ext := ".xlsx"
@@ -621,30 +617,27 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 		}
 	}
 
-	if failedRows > 0 && successRows == 0  {
+	if failedRows > 0 && successRows == 0 {
 		status = "Error All"
-	} else if (successRows > 0 && failedRows > 0) {
+	} else if successRows > 0 && failedRows > 0 {
 		status = "Success With error"
 	} else {
 		status = "Success All"
 	}
 
-
 	m := &model.ImportLog{
-		FileName: req.Name,
-		Status: status,
-		TotalRows: totalRows,
+		FileName:    req.Name,
+		Status:      status,
+		TotalRows:   totalRows,
 		SuccessRows: successRows,
-		FailedRows: failedRows,
-		Path: req.Path,
+		FailedRows:  failedRows,
+		Path:        req.Path,
 	}
 
 	newImportLog, err := u.service.CreateLog(m)
 	if err != nil {
 		return nil, err
 	}
-
-
 
 	return newImportLog, nil
 }
