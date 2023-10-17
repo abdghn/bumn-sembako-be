@@ -37,7 +37,7 @@ type Usecase interface {
 }
 
 type usecase struct {
-	service participant.Service
+	service       participant.Service
 	regionService region.Service
 }
 
@@ -444,7 +444,7 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 		}
 
 		if row.Name == "" && row.NIK == "" && row.Gender == "" {
-			break;
+			break
 		}
 
 		if row.Name == "" {
@@ -467,8 +467,12 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 			note = append(note, "No Handphone Kosong \n")
 		}
 
-		if len(row.Phone) > 15 {
-			note = append(note, "No Handphone dari 15 karakter \n")
+		if len(row.Phone) > 13 {
+			note = append(note, "No Handphone lebih dari 13 karakter \n")
+		}
+
+		if len(row.Phone) < 10 {
+			note = append(note, "No Handphone kurang dari 10 karakter \n")
 		}
 
 		if row.Address == "" {
@@ -479,16 +483,45 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 			note = append(note, "RT Kosong \n")
 		}
 
+		if len(row.RT) > 3 {
+			note = append(note, "RT lebih dari 3 digit \n")
+		}
+
 		if row.RW == "" {
 			note = append(note, "RW Kosong \n")
 		}
 
+		if len(row.RW) > 3 {
+			note = append(note, "RW lebih dari 3 digit \n")
+		}
+
 		if row.Provinsi == "" {
 			note = append(note, "Provinsi Kosong \n")
+		} else {
+			criteria := make(map[string]interface{})
+
+			criteria["name"] = strings.ToUpper(row.Provinsi)
+
+			_, err = u.regionService.ReadProvinceBy(criteria)
+			if err != nil {
+				note = append(note, "Provinsi tidak terdaftar \n")
+			}
+
 		}
 
 		if row.Kota == "" {
-			note = append(note, "Kota Kosong \n")
+			note = append(note, "Kota/Kabupaten Kosong \n")
+		} else {
+
+			criteria := make(map[string]interface{})
+
+			criteria["name"] = strings.ToUpper(row.Kota)
+
+			_, err = u.regionService.ReadRegencyBy(criteria)
+			if err != nil {
+				note = append(note, "Kota/Kabupaten tidak terdaftar \n")
+			}
+
 		}
 
 		if row.Kecamatan == "" {
@@ -511,16 +544,45 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 			note = append(note, "RT Domisili Kosong \n")
 		}
 
+		if len(row.ResidenceRT) > 3 {
+			note = append(note, "RT Domisili lebih dari 3 digit \n")
+		}
+
 		if row.ResidenceRW == "" {
 			note = append(note, "RW Domisili Kosong \n")
 		}
 
+		if len(row.RW) > 3 {
+			note = append(note, "RW Domisili lebih dari 3 digit \n")
+		}
+
 		if row.ResidenceProvinsi == "" {
 			note = append(note, "Provinsi Domisili Kosong \n")
+		} else {
+			criteria := make(map[string]interface{})
+
+			criteria["name"] = strings.ToUpper(row.ResidenceProvinsi)
+
+			_, err = u.regionService.ReadProvinceBy(criteria)
+			if err != nil {
+				note = append(note, "Provinsi Domisili tidak terdaftar \n")
+			}
+
 		}
 
 		if row.ResidenceKota == "" {
 			note = append(note, "Kota/Kabupaten Domisili Kosong \n")
+		} else {
+
+			criteria := make(map[string]interface{})
+
+			criteria["name"] = strings.ToUpper(row.ResidenceKota)
+
+			_, err = u.regionService.ReadRegencyBy(criteria)
+			if err != nil {
+				note = append(note, "Kota/Kabupaten Domisili tidak terdaftar \n")
+			}
+
 		}
 
 		if row.ResidenceKecamatan == "" {
@@ -548,18 +610,18 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 				Address:            row.Address,
 				RT:                 row.RT,
 				RW:                 row.RW,
-				Provinsi:           row.Provinsi,
-				Kota:               row.Kota,
-				Kecamatan:          row.Kecamatan,
-				Kelurahan:          row.Kelurahan,
+				Provinsi:           strings.ToUpper(row.Provinsi),
+				Kota:               strings.ToUpper(row.Kota),
+				Kecamatan:          strings.ToUpper(row.Kecamatan),
+				Kelurahan:          strings.ToUpper(row.Kelurahan),
 				KodePOS:            row.KodePOS,
 				ResidenceAddress:   row.ResidenceAddress,
 				ResidenceRT:        row.ResidenceRT,
 				ResidenceRW:        row.ResidenceRW,
-				ResidenceProvinsi:  row.ResidenceProvinsi,
-				ResidenceKota:      row.ResidenceKota,
-				ResidenceKecamatan: row.ResidenceKecamatan,
-				ResidenceKelurahan: row.ResidenceKelurahan,
+				ResidenceProvinsi:  strings.ToUpper(row.ResidenceProvinsi),
+				ResidenceKota:      strings.ToUpper(row.ResidenceKota),
+				ResidenceKecamatan: strings.ToUpper(row.ResidenceKecamatan),
+				ResidenceKelurahan: strings.ToUpper(row.ResidenceKelurahan),
 				ResidenceKodePOS:   row.ResidenceKodePOS,
 				Status:             row.Status,
 			}
