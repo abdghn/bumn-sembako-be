@@ -31,7 +31,6 @@ type Service interface {
 	ReadAllReportByRangeDate(criteria map[string]interface{}, startDate, endDate time.Time) ([]*model.Report, error)
 	GetQuota(criteria map[string]interface{}) (*model.Quota, error)
 	CreateLog(m *model.ImportLog) (*model.ImportLog, error)
-
 }
 
 type service struct {
@@ -52,10 +51,6 @@ func (e *service) ReadAllBy(criteria map[string]interface{}, search string, page
 		query.Where("name LIKE ?", search+"%")
 	}
 
-	if page == 0 || size == 0 {
-		page, size = -1, -1
-	}
-
 	limit, offset := helper.GetLimitOffset(page, size)
 	err := query.Offset(offset).Order("created_at ASC").Limit(limit).Find(&participants).Error
 	if err != nil {
@@ -73,10 +68,6 @@ func (e *service) ReadAllLogBy(criteria map[string]interface{}, search string, p
 
 	if search != "" {
 		query.Where("name LIKE ?", search+"%")
-	}
-
-	if page == 0 || size == 0 {
-		page, size = -1, -1
 	}
 
 	limit, offset := helper.GetLimitOffset(page, size)
