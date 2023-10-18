@@ -17,6 +17,7 @@ import (
 	"html/template"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -449,14 +450,39 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 
 		if row.Name == "" {
 			note = append(note, "Nama Kosong \n")
+		} else {
+			const alpha = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.,-"
+			trimString := strings.ReplaceAll(row.Name, " ", "")
+			for _, char := range trimString {
+				if !strings.Contains(alpha, strings.ToLower(string(char))) {
+					note = append(note, "Nama Tidak Sesuai Format \n")
+				}
+			}
+
 		}
 
 		if row.NIK == "" {
 			note = append(note, "NIK Kosong \n")
 		}
 
-		if len(row.NIK) > 16 {
-			note = append(note, "NIK lebih dari 16 karakter \n")
+		if !regexp.MustCompile(`\d`).MatchString(row.NIK) {
+			note = append(note, "NIK terdapat karakter atau simbol karakter \n")
+		} else {
+			if len(row.NIK) != 16 {
+				note = append(note, "NIK tidak 16 digit \n")
+			} else {
+
+				const alpha = "1234567890"
+				for _, char := range row.NIK {
+					if !strings.Contains(alpha, strings.ToLower(string(char))) {
+						note = append(note, "NIK Tidak Sesuai Format \n")
+					}
+				}
+				countBynik := u.service.Count(map[string]interface{}{"nik": row.NIK}, "")
+				if countBynik > 0 {
+					note = append(note, "NIK Sudah Terdaftar \n")
+				}
+			}
 		}
 
 		if row.Gender == "" {
@@ -465,14 +491,29 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 
 		if row.Phone == "" {
 			note = append(note, "No Handphone Kosong \n")
-		}
+		} else {
+			if len(row.Phone) > 13 {
+				note = append(note, "No Handphone lebih dari 13 digit \n")
+			}
 
-		if len(row.Phone) > 13 {
-			note = append(note, "No Handphone lebih dari 13 karakter \n")
-		}
+			if len(row.Phone) < 10 {
+				note = append(note, "No Handphone kurang dari 10 digit \n")
+			}
 
-		if len(row.Phone) < 10 {
-			note = append(note, "No Handphone kurang dari 10 karakter \n")
+			if len(row.Phone) > 9 && len(row.Phone) < 14 {
+				const alpha = "1234567890+"
+				for _, char := range row.Phone {
+					if !strings.Contains(alpha, strings.ToLower(string(char))) {
+						note = append(note, "No Handphone Tidak Sesuai Format \n")
+					}
+				}
+
+				countByPhone := u.service.Count(map[string]interface{}{"phone": row.Phone}, "")
+				if countByPhone > 0 {
+					note = append(note, "No Handphone Sudah Terdaftar \n")
+				}
+			}
+
 		}
 
 		if row.Address == "" {
