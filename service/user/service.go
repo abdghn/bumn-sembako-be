@@ -11,6 +11,7 @@ import (
 	"bumn-sembako-be/model"
 	"bumn-sembako-be/request"
 	"fmt"
+
 	"gorm.io/gorm"
 )
 
@@ -41,10 +42,6 @@ func (e *service) ReadAllBy(criteria map[string]interface{}, search string, page
 
 	if search != "" {
 		query.Where("name LIKE ?", search+"%")
-	}
-
-	if page == 0 || size == 0 {
-		page, size = -1, -1
 	}
 
 	limit, offset := helper.GetLimitOffset(page, size)
