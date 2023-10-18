@@ -20,7 +20,7 @@ type Service interface {
 	ReadAllBy(criteria map[string]interface{}, search string, page, size int) (*[]model.Participant, error)
 	ReadAllLogBy(criteria map[string]interface{}, search string, page, size int) ([]model.ImportLog, error)
 	ReadById(id int) (*model.Participant, error)
-	Count(criteria map[string]interface{}) int64
+	Count(criteria map[string]interface{}, search string) int64
 	CountLogs(criteria map[string]interface{}) int64
 	CountByDate(criteria map[string]interface{}, date time.Time) int64
 	CountByRangeDate(criteria map[string]interface{}, startDate, endDate time.Time) int64
@@ -48,7 +48,21 @@ func (e *service) ReadAllBy(criteria map[string]interface{}, search string, page
 	query := e.db.Where(criteria)
 
 	if search != "" {
-		query.Where("name LIKE ?", search+"%")
+		query.Where("name LIKE ?", search+"%").
+			Or("nik LIKE ?", search+"%").
+			Or("phone LIKE ?", search+"%").
+			Or("address LIKE ?", search+"%").
+			Or("provinsi LIKE ?", search+"%").
+			Or("kota LIKE ?", search+"%").
+			Or("kecamatan LIKE ?", search+"%").
+			Or("kelurahan LIKE ?", search+"%").
+			Or("kode_pos LIKE ?", search+"%").
+			Or("residence_address LIKE ?", search+"%").
+			Or("residence_provinsi LIKE ?", search+"%").
+			Or("residence_kota LIKE ?", search+"%").
+			Or("residence_kecamatan LIKE ?", search+"%").
+			Or("residence_kelurahan LIKE ?", search+"%").
+			Or("residence_kode_pos LIKE ?", search+"%")
 	}
 
 	limit, offset := helper.GetLimitOffset(page, size)
@@ -91,9 +105,28 @@ func (s *service) ReadById(id int) (*model.Participant, error) {
 	return &participant, nil
 }
 
-func (s *service) Count(criteria map[string]interface{}) int64 {
+func (s *service) Count(criteria map[string]interface{}, search string) int64 {
 	var result int64
-	err := s.db.Table("participants").Where(criteria).Count(&result).Error
+	query := s.db.Table("participants").Where(criteria)
+	if search != "" {
+		query.Where("name LIKE ?", search+"%").
+			Or("nik LIKE ?", search+"%").
+			Or("phone LIKE ?", search+"%").
+			Or("address LIKE ?", search+"%").
+			Or("provinsi LIKE ?", search+"%").
+			Or("kota LIKE ?", search+"%").
+			Or("kecamatan LIKE ?", search+"%").
+			Or("kelurahan LIKE ?", search+"%").
+			Or("kode_pos LIKE ?", search+"%").
+			Or("residence_address LIKE ?", search+"%").
+			Or("residence_provinsi LIKE ?", search+"%").
+			Or("residence_kota LIKE ?", search+"%").
+			Or("residence_kecamatan LIKE ?", search+"%").
+			Or("residence_kelurahan LIKE ?", search+"%").
+			Or("residence_kode_pos LIKE ?", search+"%")
+	}
+
+	err := query.Count(&result).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		return 0
