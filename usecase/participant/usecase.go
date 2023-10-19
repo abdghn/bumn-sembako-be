@@ -507,11 +507,6 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 						note = append(note, "No Handphone Tidak Sesuai Format \n")
 					}
 				}
-
-				countByPhone := u.service.Count(map[string]interface{}{"phone": row.Phone}, "")
-				if countByPhone > 0 {
-					note = append(note, "No Handphone Sudah Terdaftar \n")
-				}
 			}
 
 		}
