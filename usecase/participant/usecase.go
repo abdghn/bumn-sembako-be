@@ -385,6 +385,10 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 	var successRows, totalRows, failedRows int
 	var status string
 	newFile := excelize.NewFile()
+	randString, err := helper.Randstring(20)
+	if err != nil {
+		return nil, err
+	}
 
 	xlsx, err := excelize.OpenFile(req.TmpPath)
 	if err != nil {
@@ -451,12 +455,10 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 		if row.Name == "" {
 			note = append(note, "Nama Kosong \n")
 		} else {
-			const alpha = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.,-"
 			trimString := strings.ReplaceAll(row.Name, " ", "")
-			for _, char := range trimString {
-				if !strings.Contains(alpha, strings.ToLower(string(char))) {
-					note = append(note, "Nama Tidak Sesuai Format \n")
-				}
+			validName := helper.ContainString("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.,-", trimString)
+			if validName {
+				note = append(note, "Nama Tidak Sesuai Format \n")
 			}
 
 		}
@@ -471,13 +473,11 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 			if len(row.NIK) != 16 {
 				note = append(note, "NIK tidak 16 digit \n")
 			} else {
-
-				const alpha = "1234567890"
-				for _, char := range row.NIK {
-					if !strings.Contains(alpha, strings.ToLower(string(char))) {
-						note = append(note, "NIK Tidak Sesuai Format \n")
-					}
+				validChar := helper.ContainString("1234567890", row.NIK)
+				if validChar {
+					note = append(note, "NIK Tidak Sesuai Format \n")
 				}
+
 				countBynik := u.service.Count(map[string]interface{}{"nik": row.NIK}, "")
 				if countBynik > 0 {
 					note = append(note, "NIK Sudah Terdaftar \n")
@@ -501,12 +501,11 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 			}
 
 			if len(row.Phone) > 9 && len(row.Phone) < 14 {
-				const alpha = "1234567890+"
-				for _, char := range row.Phone {
-					if !strings.Contains(alpha, strings.ToLower(string(char))) {
-						note = append(note, "No Handphone Tidak Sesuai Format \n")
-					}
+				validPhone := helper.ContainString("1234567890+", row.Phone)
+				if validPhone {
+					note = append(note, "No Handphone Tidak Sesuai Format \n")
 				}
+
 			}
 
 		}
@@ -660,6 +659,7 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 				ResidenceKelurahan: strings.ToUpper(row.ResidenceKelurahan),
 				ResidenceKodePOS:   row.ResidenceKodePOS,
 				Status:             row.Status,
+				Reference:          randString,
 			}
 
 			_, err = u.service.Create(newParticipant)
@@ -732,6 +732,10 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 		SuccessRows: successRows,
 		FailedRows:  failedRows,
 		Path:        req.Path,
+	}
+
+	if successRows > 0 {
+		m.Reference = randString
 	}
 
 	newImportLog, err := u.service.CreateLog(m)

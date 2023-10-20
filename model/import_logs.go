@@ -10,6 +10,7 @@ type ImportLog struct {
 	SuccessRows int        `json:"success_rows"`
 	FailedRows  int        `json:"failed_rows"`
 	Path        string     `json:"path" gorm:"type: text"`
+	Reference   string     `json:"reference" gorm:"type:varchar(255)"`
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
 	DeletedAt   *time.Time `sql:"index" json:"deleted_at"`

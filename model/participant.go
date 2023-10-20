@@ -38,6 +38,7 @@ type Participant struct {
 	ImagePenerima      string     `json:"image_penerima" gorm:"type: text"`
 	IsRepresented      bool       `json:"is_represented" gorm:"default:false"`
 	UpdatedBy          string     `json:"updated_by"`
+	Reference          string     `json:"reference" gorm:"type:varchar(255)"`
 	CreatedAt          time.Time  `json:"created_at"`
 	UpdatedAt          time.Time  `json:"updated_at"`
 	DeletedAt          *time.Time `sql:"index" json:"deleted_at"`
