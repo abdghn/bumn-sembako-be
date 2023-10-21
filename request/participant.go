@@ -108,8 +108,9 @@ type Report struct {
 }
 
 type ImportParticipant struct {
-	Name    string                `json:"name" form:"name"`
-	File    *multipart.FileHeader `json:"-" form:"file"`
-	Path    string                `json:"path" form:"path"`
-	TmpPath string                `json:"tmp_path" form:"tmp_path"`
+	Name       string                `json:"name" form:"name"`
+	File       *multipart.FileHeader `json:"-" form:"file"`
+	Path       string                `json:"path" form:"path"`
+	TmpPath    string                `json:"tmp_path" form:"tmp_path"`
+	UploadedBy string                `json:"uploaded_by" form:"uploaded_by"`
 }
