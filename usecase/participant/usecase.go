@@ -422,7 +422,7 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 	newFile.SetCellValue(sheet1Name, "V1", "Catatan")
 
 	var rows []*request.ParticipantInput
-	for i := 2; i < 20000; i++ {
+	for i := 2; i < 50000; i++ {
 		var note []string
 		row := &request.ParticipantInput{
 			Name:               xlsx.GetCellValue(sheet1Name, fmt.Sprintf("A%d", i)),
