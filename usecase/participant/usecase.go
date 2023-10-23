@@ -397,6 +397,7 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 
 	sheet1Name := "Sheet1"
 
+
 	newFile.SetSheetName(newFile.GetSheetName(1), sheet1Name)
 	newFile.SetCellValue(sheet1Name, "A1", "Nama")
 	newFile.SetCellValue(sheet1Name, "B1", "NIK")
@@ -732,6 +733,7 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 		SuccessRows: successRows,
 		FailedRows:  failedRows,
 		Path:        req.Path,
+		UploadedBy: req.UploadedBy,
 	}
 
 	if successRows > 0 {
