@@ -103,7 +103,7 @@ func (u *usecase) Count(req request.ParticipantPaged) int64 {
 		criteria["status"] = req.Status
 	}
 
-	return u.service.Count(criteria, "")
+	return u.service.Count(criteria, req.Search)
 }
 
 func (u *usecase) CountLogs(req request.ParticipantPaged) int64 {
