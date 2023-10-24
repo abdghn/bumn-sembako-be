@@ -11,12 +11,13 @@ import (
 	"bumn-sembako-be/request"
 	"bumn-sembako-be/usecase/participant"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Handler interface {
@@ -86,7 +87,6 @@ func (h *handler) ViewLogs(c *gin.Context) {
 
 }
 
-
 func (h *handler) ViewParticipant(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
@@ -136,7 +136,7 @@ func (h *handler) Update(c *gin.Context) {
 		// generate new file name
 		ext := filepath.Ext(file.Filename)
 		currentTime := time.Now()
-		filename := currentTime.Format("20060102150405") + ext
+		filename := currentTime.Format("20060102150405") + "-image" + ext
 
 		tmpFile := path + "/" + filename
 		if err = c.SaveUploadedFile(file, tmpFile); err != nil {
@@ -160,7 +160,7 @@ func (h *handler) Update(c *gin.Context) {
 		// generate new file name
 		ext := filepath.Ext(file.Filename)
 		currentTime := time.Now()
-		filename := currentTime.Format("20060102150405") + ext
+		filename := currentTime.Format("20060102150405") + "-image-penerima" + ext
 
 		tmpFile := path + "/" + filename
 		if err = c.SaveUploadedFile(file, tmpFile); err != nil {
@@ -250,7 +250,7 @@ func (h *handler) ExportReport(c *gin.Context) {
 
 }
 
-func (h *handler) BulkCreate(c *gin.Context)  {
+func (h *handler) BulkCreate(c *gin.Context) {
 	var req request.ImportParticipant
 	var err error
 	err = c.ShouldBind(&req)
@@ -281,7 +281,7 @@ func (h *handler) BulkCreate(c *gin.Context)  {
 	req.Name = file.Filename
 	req.TmpPath = tmpFile
 
-	result, err :=h.usecase.BulkCreate(req)
+	result, err := h.usecase.BulkCreate(req)
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		helper.HandleError(c, http.StatusInternalServerError, err.Error())
@@ -292,6 +292,6 @@ func (h *handler) BulkCreate(c *gin.Context)  {
 
 }
 
-func (h *handler) ViewAllImportLog(c *gin.Context)  {
+func (h *handler) ViewAllImportLog(c *gin.Context) {
 
 }
