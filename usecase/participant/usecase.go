@@ -269,10 +269,15 @@ func (u *usecase) Export(input request.Report) (string, error) {
 	//var date time.Time
 	var startDate, endDate time.Time
 	var err error
+	var totalData int
 	criteria := make(map[string]interface{})
 	criteria["status"] = "DONE"
 	if input.Provinsi != "" {
 		criteria["provinsi"] = input.Provinsi
+	}
+
+	if input.Kota != "" {
+		criteria["kota"] = input.Kota
 	}
 
 	if input.Date != "" {
@@ -336,6 +341,10 @@ func (u *usecase) Export(input request.Report) (string, error) {
 
 	}
 
+	if len(reports) > 0 {
+		totalData = reports[0].Total
+	}
+
 	templateData := struct {
 		Provinsi string
 		Kota     string
@@ -344,6 +353,7 @@ func (u *usecase) Export(input request.Report) (string, error) {
 		Evaluasi template.HTML
 		Solusi   template.HTML
 		Reports  []*model.Report
+		Total    int
 	}{
 		Provinsi: input.Provinsi,
 		Kota:     input.Kota,
@@ -352,6 +362,7 @@ func (u *usecase) Export(input request.Report) (string, error) {
 		Evaluasi: input.Evaluasi,
 		Solusi:   input.Solusi,
 		Reports:  reports,
+		Total:    totalData,
 	}
 
 	//html template path
@@ -396,7 +407,6 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 	}
 
 	sheet1Name := "Sheet1"
-
 
 	newFile.SetSheetName(newFile.GetSheetName(1), sheet1Name)
 	newFile.SetCellValue(sheet1Name, "A1", "Nama")
@@ -733,7 +743,7 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 		SuccessRows: successRows,
 		FailedRows:  failedRows,
 		Path:        req.Path,
-		UploadedBy: req.UploadedBy,
+		UploadedBy:  req.UploadedBy,
 	}
 
 	if successRows > 0 {

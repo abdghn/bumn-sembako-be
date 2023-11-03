@@ -61,4 +61,5 @@ type Report struct {
 	Image    string
 	Address  string
 	ImageB64 template.URL
+	Total int
 }

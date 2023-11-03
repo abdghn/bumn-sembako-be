@@ -215,7 +215,7 @@ func (e *service) Create(participant *model.Participant) (*model.Participant, er
 func (s *service) ReadAllReport(criteria map[string]interface{}, date time.Time) ([]*model.Report, error) {
 	var reports []*model.Report
 
-	query := s.db.Table("participants").Select("ROW_NUMBER() OVER (ORDER BY id) AS No", "nik as NIK", "name AS Name", "image as Image", "phone AS Phone", "address AS Address").Where(criteria)
+	query := s.db.Table("participants").Select("ROW_NUMBER() OVER (ORDER BY id) AS No", "nik as NIK", "name AS Name", "image_penerima as Image", "phone AS Phone", "address AS Address", "COUNT(*) OVER() AS Total").Where(criteria)
 	if !date.IsZero() {
 		query.Where("updated_at < ?", date)
 
@@ -232,7 +232,7 @@ func (s *service) ReadAllReport(criteria map[string]interface{}, date time.Time)
 func (s *service) ReadAllReportByRangeDate(criteria map[string]interface{}, startDate, endDate time.Time) ([]*model.Report, error) {
 	var reports []*model.Report
 
-	query := s.db.Table("participants").Select("ROW_NUMBER() OVER (ORDER BY id) AS No", "nik as NIK", "name AS Name", "image as Image", "phone AS Phone", "address AS Address").Where(criteria)
+	query := s.db.Table("participants").Select("ROW_NUMBER() OVER (ORDER BY id) AS No", "nik as NIK", "name AS Name", "image_penerima as Image", "phone AS Phone", "address AS Address", "COUNT(*) OVER() AS Total").Where(criteria)
 	if !startDate.IsZero() && !endDate.IsZero() {
 		query.Where("updated_at <= ? AND updated_at >=  ?", endDate, startDate)
 
@@ -240,7 +240,7 @@ func (s *service) ReadAllReportByRangeDate(criteria map[string]interface{}, star
 	err := query.Order("updated_at ASC").Find(&reports).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)
-		fmt.Printf("[participant.service.ReadAllReport] error execute query %v \n", err)
+		fmt.Printf("[participant.service.ReadAllReportByRangeDate] error execute query %v \n", err)
 		return nil, fmt.Errorf("failed view all data")
 	}
 	return reports, nil
