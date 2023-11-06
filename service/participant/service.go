@@ -80,7 +80,7 @@ func (e *service) ReadAllBy(criteria map[string]interface{}, search string, page
 func (e *service) ReadAllDone() ([]*model.Participant, error) {
 	var participants []*model.Participant
 
-	err := e.db.Table("participants").Find(participants).Where("status = ?", "DONE").Error
+	err := e.db.Table("participants").Where("status = ?", "DONE").Find(&participants).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		fmt.Printf("[participant.service.ReadAllDone] error execute query %v \n", err)
