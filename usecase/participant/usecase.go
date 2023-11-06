@@ -768,6 +768,8 @@ func (u *usecase) UpdateImageBase64() (string, error) {
 		return "", err
 	}
 
+	fmt.Println(participants)
+
 	for _, value := range participants {
 		if value.ImagePenerima != "" {
 
