@@ -377,15 +377,17 @@ func (u *usecase) Export(input request.Report) (string, error) {
 	if err := r.ParseTemplate(templatePath, templateData); err == nil {
 
 		// Generate PDF with custom arguments
-		args := []string{"no-pdf-compression"}
+		args := []string{"low-quality"}
 
 		// Generate PDF
 		ok, errorGenerate := r.GeneratePDF(outputPath, args)
 		if errorGenerate != nil {
+			helper.CommonLogger().Error(errorGenerate)
 			return "", errorGenerate
 		}
 		fmt.Println(ok, "pdf generated successfully")
 	} else {
+		helper.CommonLogger().Error(err)
 		fmt.Printf("error: %v", err)
 	}
 	return "image/" + filename, nil
