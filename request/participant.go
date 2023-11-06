@@ -117,3 +117,7 @@ type ImportParticipant struct {
 	TmpPath    string                `json:"tmp_path" form:"tmp_path"`
 	UploadedBy string                `json:"uploaded_by" form:"uploaded_by"`
 }
+
+type ConvertToBase64Input struct {
+	ImagePenerimaBase64 template.URL
+}

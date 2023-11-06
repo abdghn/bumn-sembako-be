@@ -15,7 +15,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -28,11 +27,8 @@ type Handler interface {
 	Update(c *gin.Context)
 	ViewDashboard(c *gin.Context)
 	ExportReport(c *gin.Context)
-	ExportReportV2(c *gin.Context)
 	BulkCreate(c *gin.Context)
-	ExportExcel(c *gin.Context)
-	ImageHandler(c *gin.Context)
-	ImageBase64Handler(c *gin.Context)
+	UpdateImageBase64(c *gin.Context)
 }
 
 type handler struct {
@@ -197,70 +193,11 @@ func (h *handler) ViewDashboard(c *gin.Context) {
 		return
 	}
 
-	result, err := h.usecase.GetTotalDashboardV2(req)
-	if err != nil {
-		helper.CommonLogger().Error(err)
-		helper.HandleError(c, http.StatusNotFound, err.Error())
-		return
-	}
+	result, err := h.usecase.GetTotalDashboard(req)
 	helper.HandleSuccess(c, result)
 }
 
 func (h *handler) ExportReport(c *gin.Context) {
-	var req request.Report
-	var err error
-
-	err = c.ShouldBindJSON(&req)
-	if err != nil {
-		helper.CommonLogger().Error(err)
-		helper.HandleError(c, http.StatusInternalServerError, "Oopss server someting wrong")
-		return
-	}
-
-	req.Url = fmt.Sprintf("http://%s", c.Request.Host)
-
-	path, err := h.usecase.Export(req)
-	if err != nil {
-		helper.CommonLogger().Error(err)
-		helper.HandleError(c, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	//pdfg, err := wkhtmltopdf.NewPDFGenerator()
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//
-	//f, err := os.Open("./report.html")
-	//if f != nil {
-	//	defer f.Close()
-	//}
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//
-	//pdfg.AddPage(wkhtmltopdf.NewPageReader(f))
-	//
-	//pdfg.Orientation.Set(wkhtmltopdf.OrientationPortrait)
-	//pdfg.Dpi.Set(300)
-	//
-	//err = pdfg.Create()
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//
-	//err = pdfg.WriteFile("./output.pdf")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//
-	//log.Println("Done")
-
-	helper.HandleSuccess(c, path)
-
-}
-
-func (h *handler) ExportReportV2(c *gin.Context) {
 	var req request.Report
 	var err error
 
@@ -356,47 +293,18 @@ func (h *handler) BulkCreate(c *gin.Context) {
 
 }
 
-func (h *handler) ExportExcel(c *gin.Context) {
-	var req request.ParticipantFilter
-	var err error
+func (h *handler) ViewAllImportLog(c *gin.Context) {
 
-	err = c.ShouldBindQuery(&req)
+}
+
+func (h *handler) UpdateImageBase64(c *gin.Context) {
+	result, err := h.usecase.UpdateImageBase64()
 	if err != nil {
 		helper.CommonLogger().Error(err)
-		helper.HandleError(c, http.StatusInternalServerError, "Oopss server someting wrong")
+		helper.HandleError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	result, err := h.usecase.ExportExcel(req)
-	if err != nil {
-		helper.CommonLogger().Error(err)
-		helper.HandleError(c, http.StatusNotFound, err.Error())
-		return
-	}
 	helper.HandleSuccess(c, result)
 
-}
-
-func (h *handler) ImageHandler(c *gin.Context) {
-	path := c.Param("path")
-	arr := strings.SplitAfter(path, "/")
-
-	// Read the entire file into a byte slice
-	fileBytes, err := os.ReadFile("./uploads/" + arr[1])
-	if err != nil {
-		helper.CommonLogger().Error(err)
-		helper.HandleError(c, http.StatusInternalServerError, "Oopss server someting wrong")
-		return
-	}
-
-	mimeType := http.DetectContentType(fileBytes)
-
-	c.Data(http.StatusOK, mimeType, fileBytes)
-}
-
-func (h *handler) ImageBase64Handler(c *gin.Context) {
-	path := c.Param("path")
-	base64Image := h.usecase.ConvertBase64(path)
-
-	c.JSON(http.StatusOK, base64Image)
 }

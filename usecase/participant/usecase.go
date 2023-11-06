@@ -15,7 +15,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"html/template"
-	"math"
 	"net/http"
 	"os"
 	"regexp"
@@ -34,12 +33,9 @@ type Usecase interface {
 	ReadById(id int) (*model.Participant, error)
 	Update(id int, input request.UpdateParticipant) (*model.Participant, error)
 	GetTotalDashboard(req request.ParticipantFilter) (*model.TotalParticipantResponse, error)
-	GetTotalDashboardV2(req request.ParticipantFilter) (*model.TotalParticipantResponse, error)
 	BulkCreate(req request.ImportParticipant) (*model.ImportLog, error)
-	ExportExcel(req request.ParticipantFilter) (string, error)
-	Export(input request.Report) ([]*model.ReportPerFile, error)
-	ConvertBase64(path string) template.URL
-	ExportV2(input request.Report) ([]*model.ReportPerFile, error)
+	Export(input request.Report) (string, error)
+	UpdateImageBase64() (string, error)
 }
 
 type usecase struct {
@@ -237,7 +233,7 @@ func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.Total
 	}
 
 	//m.TotaPenerima = u.service.CountByDate(criteria, date)
-	m.TotalPenerima = u.service.CountByRangeDate(criteria, startDate, endDate)
+	m.TotaPenerima = u.service.CountByRangeDate(criteria, startDate, endDate)
 
 	status = "PARTIAL_DONE"
 	criteria["status"] = status
@@ -269,35 +265,12 @@ func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.Total
 	return &m, nil
 }
 
-func (u *usecase) GetTotalDashboardV2(req request.ParticipantFilter) (*model.TotalParticipantResponse, error) {
-	criteria := make(map[string]interface{})
-	if req.Provinsi != "" {
-		criteria["provinsi"] = req.Provinsi
-	}
-
-	if req.Kota != "" {
-		criteria["kota"] = req.Kota
-	}
-
-	if req.Kecamatan != "" {
-		criteria["kecamatan"] = req.Kecamatan
-	}
-
-	if req.Kelurahan != "" {
-		criteria["kelurahan"] = req.Kelurahan
-	}
-
-	return u.service.CountAllStatus(criteria)
-}
-
-func (u *usecase) Export(input request.Report) ([]*model.ReportPerFile, error) {
+func (u *usecase) Export(input request.Report) (string, error) {
 	r := helper.NewRequestPdf("")
-
-	var reportPerFile []*model.ReportPerFile
 	//var date time.Time
 	var startDate, endDate time.Time
+	var err error
 	var totalData int
-	const limit = 100
 	criteria := make(map[string]interface{})
 	criteria["status"] = "DONE"
 	if input.Provinsi != "" {
@@ -308,133 +281,117 @@ func (u *usecase) Export(input request.Report) ([]*model.ReportPerFile, error) {
 		criteria["kota"] = input.Kota
 	}
 
-	totalPage := int(math.Ceil(float64(input.TotalSudahMenerima) / float64(limit)))
+	if input.Date != "" {
+		//stringDate := req.Date + "T00:00:00.00Z"
+		//date, err = time.Parse(time.RFC3339, stringDate)
+		//if err != nil {
+		//	return nil, err
+		//}
 
-	fmt.Println(totalPage)
-	for i := 1; i <= totalPage; i++ {
-		reports, err := u.service.ReadAllReportByRangeDate(criteria, startDate, endDate, i, limit)
+		stringStartDate := input.Date + "T00:00:00.00Z"
+		stringEndDate := input.Date + "T23:59:59.999Z"
+		startDate, err = time.Parse(time.RFC3339, stringStartDate)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 
-		if len(reports) > 0 {
-			totalData = reports[0].Total
-
+		endDate, err = time.Parse(time.RFC3339, stringEndDate)
+		if err != nil {
+			return "", err
 		}
+	}
 
-		for _, value := range reports {
-			if value.Image != "" {
+	//reports, err := u.service.ReadAllReport(criteria, date)
+	reports, err := u.service.ReadAllReportByRangeDate(criteria, startDate, endDate)
+	if err != nil {
+		return "", err
+	}
 
-				arr := strings.SplitAfter(value.Image, "/")
-				//value.Image = "uploads/" + arr[1]
+	for _, value := range reports {
+		if value.Image != "" {
 
-				// Read the entire file into a byte slice
-				bytes, errorReadFile := os.ReadFile("./uploads/" + arr[1])
-				if errorReadFile != nil {
-					continue
-				}
+			arr := strings.SplitAfter(value.Image, "/")
+			//value.Image = "uploads/" + arr[1]
 
-				var base64Encoding string
-
-				// Determine the content type of the image file
-				mimeType := http.DetectContentType(bytes)
-
-				// Prepend the appropriate URI scheme header depending
-				// on the MIME type
-				switch mimeType {
-				case "image/jpeg":
-					base64Encoding += "data:image/jpeg;base64,"
-				case "image/png":
-					base64Encoding += "data:image/png;base64,"
-				}
-
-				// Append the base64 encoded output
-				base64Encoding += base64.StdEncoding.EncodeToString(bytes)
-
-				// Print the full base64 representation of the image
-				value.ImageB64 = template.URL(base64Encoding)
+			// Read the entire file into a byte slice
+			bytes, errorReadFile := os.ReadFile("./uploads/" + arr[1])
+			if errorReadFile != nil {
+				return "", errorReadFile
 			}
 
-		}
+			var base64Encoding string
 
-		templateData := struct {
-			Provinsi string
-			Kota     string
-			Date     string
-			Jam      template.HTML
-			Evaluasi template.HTML
-			Solusi   template.HTML
-			Reports  []*model.Report
-			Total    int
-		}{
-			Provinsi: input.Provinsi,
-			Kota:     input.Kota,
-			Date:     input.Date,
-			Jam:      input.Jam,
-			Evaluasi: input.Evaluasi,
-			Solusi:   input.Solusi,
-			Reports:  reports,
-			Total:    totalData,
-		}
+			// Determine the content type of the image file
+			mimeType := http.DetectContentType(bytes)
 
-		//html template path
-		templatePath := "templates/report.html"
-
-		currentTime := time.Now()
-		filename := currentTime.Format("20060102150405") + "-report.pdf"
-
-		//path for download pdf
-		outputPath := "uploads/" + filename
-
-		if err := r.ParseTemplate(templatePath, templateData); err == nil {
-
-			// Generate PDF with custom arguments
-			args := []string{"low-quality"}
-
-			// Generate PDF
-			ok, errorGenerate := r.GeneratePDF(outputPath, args)
-			if errorGenerate != nil {
-				helper.CommonLogger().Error(errorGenerate)
-				return nil, errorGenerate
+			// Prepend the appropriate URI scheme header depending
+			// on the MIME type
+			switch mimeType {
+			case "image/jpeg":
+				base64Encoding += "data:image/jpeg;base64,"
+			case "image/png":
+				base64Encoding += "data:image/png;base64,"
 			}
-			fmt.Println(ok, "pdf generated successfully")
-		} else {
-			helper.CommonLogger().Error(err)
-			fmt.Printf("error: %v", err)
-		}
 
-		r := &model.ReportPerFile{
-			Name: filename,
-			Path: "image/" + filename,
-		}
+			// Append the base64 encoded output
+			base64Encoding += base64.StdEncoding.EncodeToString(bytes)
 
-		reportPerFile = append(reportPerFile, r)
+			// Print the full base64 representation of the image
+			value.ImageB64 = template.URL(base64Encoding)
+		}
 
 	}
 
-	// if input.Date != "" {
-	// 	//stringDate := req.Date + "T00:00:00.00Z"
-	// 	//date, err = time.Parse(time.RFC3339, stringDate)
-	// 	//if err != nil {
-	// 	//	return nil, err
-	// 	//}
+	if len(reports) > 0 {
+		totalData = reports[0].Total
+	}
 
-	// 	stringStartDate := input.Date + "T00:00:00.00Z"
-	// 	stringEndDate := input.Date + "T23:59:59.999Z"
-	// 	startDate, err = time.Parse(time.RFC3339, stringStartDate)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
+	templateData := struct {
+		Provinsi string
+		Kota     string
+		Date     string
+		Jam      template.HTML
+		Evaluasi template.HTML
+		Solusi   template.HTML
+		Reports  []*model.Report
+		Total    int
+	}{
+		Provinsi: input.Provinsi,
+		Kota:     input.Kota,
+		Date:     input.Date,
+		Jam:      input.Jam,
+		Evaluasi: input.Evaluasi,
+		Solusi:   input.Solusi,
+		Reports:  reports,
+		Total:    totalData,
+	}
 
-	// 	endDate, err = time.Parse(time.RFC3339, stringEndDate)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// }
+	//html template path
+	templatePath := "templates/report.html"
 
-	//reports, err := u.service.ReadAllReport(criteria, date)
+	currentTime := time.Now()
+	filename := currentTime.Format("20060102150405") + "-report.pdf"
 
-	return reportPerFile, nil
+	//path for download pdf
+	outputPath := "uploads/" + filename
+
+	if err := r.ParseTemplate(templatePath, templateData); err == nil {
+
+		// Generate PDF with custom arguments
+		args := []string{"low-quality"}
+
+		// Generate PDF
+		ok, errorGenerate := r.GeneratePDF(outputPath, args)
+		if errorGenerate != nil {
+			helper.CommonLogger().Error(errorGenerate)
+			return "", errorGenerate
+		}
+		fmt.Println(ok, "pdf generated successfully")
+	} else {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("error: %v", err)
+	}
+	return "image/" + filename, nil
 }
 
 func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, error) {
@@ -804,253 +761,54 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 	return newImportLog, nil
 }
 
-func (u *usecase) ExportExcel(req request.ParticipantFilter) (string, error) {
-	criteria := make(map[string]interface{})
-	xlsx := excelize.NewFile()
-	sheet1Name := "Sheet1"
-	xlsx.SetSheetName(xlsx.GetSheetName(1), sheet1Name)
-	xlsx.SetCellValue(sheet1Name, "A1", "Provinsi")
-	xlsx.SetCellValue(sheet1Name, "B1", "Kota")
-	xlsx.SetCellValue(sheet1Name, "C1", "Total Penerima Bantuan Kota Anda")
-	xlsx.SetCellValue(sheet1Name, "D1", "Sudah Menerima Bantuan")
-	xlsx.SetCellValue(sheet1Name, "E1", "Belum Unggah Foto Penerima Bantuan")
-	xlsx.SetCellValue(sheet1Name, "F1", "Belum Menerima Bantuan")
-	xlsx.SetCellValue(sheet1Name, "G1", "Data Tidak Sesuai")
+func (u *usecase) UpdateImageBase64() (string, error) {
 
-	if req.Provinsi != "" {
-		criteria["provinsi"] = req.Provinsi
-	}
-
-	if req.Kota != "" {
-		criteria["kota"] = req.Kota
-	}
-
-	rows, err := u.service.CountAllStatusGroup(criteria)
+	participants, err := u.service.ReadAllDone()
 	if err != nil {
 		return "", err
 	}
 
-	fmt.Print(len(rows))
+	for _, value := range participants {
+		if value.ImagePenerima != "" {
 
-	for i, row := range rows {
-		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("A%d", i+2), row.Provinsi)
-		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("B%d", i+2), row.Kota)
-		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("C%d", i+2), row.TotalPenerima)
-		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("D%d", i+2), row.TotalSudahMenerima)
-		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("E%d", i+2), row.TotalPartialDone)
-		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("F%d", i+2), row.TotalBelumMenerima)
-		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("G%d", i+2), row.TotalDataGugur)
-	}
+			arr := strings.SplitAfter(value.ImagePenerima, "/")
+			//value.Image = "uploads/" + arr[1]
 
-	path := "./uploads"
-	ext := ".xlsx"
-	currentTime := time.Now()
-	filename := currentTime.Format("20060102150405") + "-dashboard" + ext
-	tmpFile := path + "/" + filename
-	err = xlsx.SaveAs(tmpFile)
+			// Read the entire file into a byte slice
+			bytes, errorReadFile := os.ReadFile("./uploads/" + arr[1])
+			if errorReadFile != nil {
+				return "", errorReadFile
+			}
 
-	return "image/" + filename, nil
+			var base64Encoding string
 
-}
+			// Determine the content type of the image file
+			mimeType := http.DetectContentType(bytes)
 
-func (u *usecase) ExportV2(input request.Report) ([]*model.ReportPerFile, error) {
-	r := helper.NewRequestPdf("")
+			// Prepend the appropriate URI scheme header depending
+			// on the MIME type
+			switch mimeType {
+			case "image/jpeg":
+				base64Encoding += "data:image/jpeg;base64,"
+			case "image/png":
+				base64Encoding += "data:image/png;base64,"
+			}
 
-	var reportPerFile []*model.ReportPerFile
-	//var date time.Time
-	var startDate, endDate time.Time
-	var totalData int
-	const limit = 100
-	criteria := make(map[string]interface{})
-	criteria["status"] = "DONE"
-	if input.Provinsi != "" {
-		criteria["provinsi"] = input.Provinsi
-	}
+			// Append the base64 encoded output
+			base64Encoding += base64.StdEncoding.EncodeToString(bytes)
 
-	if input.Kota != "" {
-		criteria["kota"] = input.Kota
-	}
+			// Print the full base64 representation of the image
+			value.ImagePenerimaBase64 = template.URL(base64Encoding)
+			input := &request.ConvertToBase64Input{ImagePenerimaBase64: value.ImagePenerimaBase64}
+			_, errConvert := u.service.UpdateBase64Image(value.ID, input)
+			if errConvert != nil {
+				helper.CommonLogger().Error(errConvert)
+				return "", errConvert
+			}
 
-	// totalPage := int(math.Ceil(float64(input.TotalSudahMenerima) / float64(limit)))
-
-	// for i := 1; i <= totalPage; i++ {
-	// 	reports, err := u.service.ReadAllReportByRangeDate(criteria, startDate, endDate, i, limit)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-
-	// 	if len(reports) > 0 {
-	// 		totalData = reports[0].Total
-
-	// 	}
-
-	// 	templateData := struct {
-	// 		Provinsi string
-	// 		Kota     string
-	// 		Date     string
-	// 		Jam      template.HTML
-	// 		Evaluasi template.HTML
-	// 		Solusi   template.HTML
-	// 		Reports  []*model.Report
-	// 		Total    int
-	// 	}{
-	// 		Provinsi: input.Provinsi,
-	// 		Kota:     input.Kota,
-	// 		Date:     input.Date,
-	// 		Jam:      input.Jam,
-	// 		Evaluasi: input.Evaluasi,
-	// 		Solusi:   input.Solusi,
-	// 		Reports:  reports,
-	// 		Total:    totalData,
-	// 	}
-
-	// 	//html template path
-	// 	templatePath := "templates/report-v2.html"
-
-	// 	currentTime := time.Now()
-	// 	filename := currentTime.Format("20060102150405") + "-report.pdf"
-
-	// 	//path for download pdf
-	// 	outputPath := "uploads/" + filename
-
-	// 	if err := r.ParseTemplate(templatePath, templateData); err == nil {
-
-	// 		// Generate PDF with custom arguments
-	// 		args := []string{"low-quality"}
-
-	// 		// Generate PDF
-	// 		ok, errorGenerate := r.GeneratePDF(outputPath, args)
-	// 		if errorGenerate != nil {
-	// 			helper.CommonLogger().Error(errorGenerate)
-	// 			return nil, errorGenerate
-	// 		}
-	// 		fmt.Println(ok, "pdf generated successfully")
-	// 	} else {
-	// 		helper.CommonLogger().Error(err)
-	// 		fmt.Printf("error: %v", err)
-	// 	}
-
-	// 	r := &model.ReportPerFile{
-	// 		Name: filename,
-	// 		Path: "image/" + filename,
-	// 	}
-
-	// 	reportPerFile = append(reportPerFile, r)
-
-	// }
-
-	// if input.Date != "" {
-	// 	//stringDate := req.Date + "T00:00:00.00Z"
-	// 	//date, err = time.Parse(time.RFC3339, stringDate)
-	// 	//if err != nil {
-	// 	//	return nil, err
-	// 	//}
-
-	// 	stringStartDate := input.Date + "T00:00:00.00Z"
-	// 	stringEndDate := input.Date + "T23:59:59.999Z"
-	// 	startDate, err = time.Parse(time.RFC3339, stringStartDate)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-
-	// 	endDate, err = time.Parse(time.RFC3339, stringEndDate)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// }
-
-	//reports, err := u.service.ReadAllReport(criteria, date)
-
-	reports, err := u.service.ReadAllReportByRangeDate(criteria, startDate, endDate, 1, limit)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(reports) > 0 {
-		totalData = reports[0].Total
-
-	}
-
-	templateData := struct {
-		Provinsi string
-		Kota     string
-		Date     string
-		Jam      template.HTML
-		Evaluasi template.HTML
-		Solusi   template.HTML
-		Reports  []*model.Report
-		Total    int
-	}{
-		Provinsi: input.Provinsi,
-		Kota:     input.Kota,
-		Date:     input.Date,
-		Jam:      input.Jam,
-		Evaluasi: input.Evaluasi,
-		Solusi:   input.Solusi,
-		Reports:  reports,
-		Total:    totalData,
-	}
-
-	//html template path
-	templatePath := "templates/report-v2.html"
-
-	currentTime := time.Now()
-	filename := currentTime.Format("20060102150405") + "-report.pdf"
-
-	//path for download pdf
-	outputPath := "uploads/" + filename
-
-	if err := r.ParseTemplate(templatePath, templateData); err == nil {
-
-		// Generate PDF with custom arguments
-		args := []string{"low-quality"}
-
-		// Generate PDF
-		ok, errorGenerate := r.GeneratePDF(outputPath, args)
-		if errorGenerate != nil {
-			helper.CommonLogger().Error(errorGenerate)
-			return nil, errorGenerate
 		}
-		fmt.Println(ok, "pdf generated successfully")
-	} else {
-		helper.CommonLogger().Error(err)
-		fmt.Printf("error: %v", err)
+
 	}
 
-	reportPerFile = append(reportPerFile, &model.ReportPerFile{
-		Name: filename,
-		Path: "image/" + filename})
-
-	return reportPerFile, nil
-}
-
-func (u *usecase) ConvertBase64(path string) template.URL {
-	arr := strings.SplitAfter(path, "/")
-	//value.Image = "uploads/" + arr[1]
-
-	// Read the entire file into a byte slice
-	bytes, errorReadFile := os.ReadFile("./uploads/" + arr[1])
-	if errorReadFile != nil {
-		return ""
-	}
-
-	var base64Encoding string
-
-	// Determine the content type of the image file
-	mimeType := http.DetectContentType(bytes)
-
-	// Prepend the appropriate URI scheme header depending
-	// on the MIME type
-	switch mimeType {
-	case "image/jpeg":
-		base64Encoding += "data:image/jpeg;base64,"
-	case "image/png":
-		base64Encoding += "data:image/png;base64,"
-	}
-
-	// Append the base64 encoded output
-	base64Encoding += base64.StdEncoding.EncodeToString(bytes)
-
-	// Print the full base64 representation of the image
-	return template.URL(base64Encoding)
+	return "success convert", nil
 }

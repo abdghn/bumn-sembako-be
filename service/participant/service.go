@@ -19,6 +19,7 @@ import (
 type Service interface {
 	ReadAllBy(criteria map[string]interface{}, search string, page, size int) (*[]model.Participant, error)
 	ReadAllLogBy(criteria map[string]interface{}, search string, page, size int) ([]model.ImportLog, error)
+	ReadAllDone() ([]*model.Participant, error)
 	ReadById(id int) (*model.Participant, error)
 	Count(criteria map[string]interface{}, search string) int64
 	CountLogs(criteria map[string]interface{}) int64
@@ -28,11 +29,10 @@ type Service interface {
 	UpdateStatus(id int, status *request.PartialDone) (*model.Participant, error)
 	Create(participant *model.Participant) (*model.Participant, error)
 	ReadAllReport(criteria map[string]interface{}, date time.Time) ([]*model.Report, error)
-	ReadAllReportByRangeDate(criteria map[string]interface{}, startDate, endDate time.Time, page, size int) ([]*model.Report, error)
+	ReadAllReportByRangeDate(criteria map[string]interface{}, startDate, endDate time.Time) ([]*model.Report, error)
 	GetQuota(criteria map[string]interface{}) (*model.Quota, error)
 	CreateLog(m *model.ImportLog) (*model.ImportLog, error)
-	CountAllStatus(criteria map[string]interface{}) (*model.TotalParticipantResponse, error)
-	CountAllStatusGroup(criteria map[string]interface{}) ([]*model.TotalParticipantListResponse, error)
+	UpdateBase64Image(id int, data *request.ConvertToBase64Input) (*model.Participant, error)
 }
 
 type service struct {
@@ -75,6 +75,29 @@ func (e *service) ReadAllBy(criteria map[string]interface{}, search string, page
 		return nil, fmt.Errorf("failed view all data")
 	}
 	return &participants, nil
+}
+
+func (e *service) ReadAllDone() ([]*model.Participant, error) {
+	var participants []*model.Participant
+
+	err := e.db.Find(participants).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[participant.service.ReadAllDone] error execute query %v \n", err)
+		return nil, fmt.Errorf("failed view all data")
+	}
+	return participants, nil
+}
+
+func (e *service) UpdateBase64Image(id int, data *request.ConvertToBase64Input) (*model.Participant, error) {
+	var upParticipant = model.Participant{}
+	err := e.db.Table("participants").Where("id = ?", id).Where("status = 'DONE'").First(&upParticipant).Updates(&data).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[participant.service.UpdateBase64Image] error execute query %v \n", err)
+		return nil, fmt.Errorf("failed update data")
+	}
+	return &upParticipant, nil
 }
 
 func (e *service) ReadAllLogBy(criteria map[string]interface{}, search string, page, size int) ([]model.ImportLog, error) {
@@ -231,7 +254,7 @@ func (s *service) ReadAllReport(criteria map[string]interface{}, date time.Time)
 	return reports, nil
 }
 
-func (s *service) ReadAllReportByRangeDate(criteria map[string]interface{}, startDate, endDate time.Time, page, size int) ([]*model.Report, error) {
+func (s *service) ReadAllReportByRangeDate(criteria map[string]interface{}, startDate, endDate time.Time) ([]*model.Report, error) {
 	var reports []*model.Report
 
 	query := s.db.Table("participants").Select("ROW_NUMBER() OVER (ORDER BY id) AS No", "nik as NIK", "name AS Name", "image_penerima as Image", "phone AS Phone", "address AS Address", "COUNT(*) OVER() AS Total").Where(criteria)
@@ -239,9 +262,7 @@ func (s *service) ReadAllReportByRangeDate(criteria map[string]interface{}, star
 		query.Where("updated_at <= ? AND updated_at >=  ?", endDate, startDate)
 
 	}
-
-	limit, offset := helper.GetLimitOffset(page, size)
-	err := query.Offset(offset).Limit(limit).Order("updated_at ASC").Find(&reports).Error
+	err := query.Order("updated_at ASC").Find(&reports).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		fmt.Printf("[participant.service.ReadAllReportByRangeDate] error execute query %v \n", err)
@@ -276,46 +297,4 @@ func (s *service) CreateLog(m *model.ImportLog) (*model.ImportLog, error) {
 	tx.Commit()
 
 	return m, nil
-}
-
-func (s *service) CountAllStatus(criteria map[string]interface{}) (*model.TotalParticipantResponse, error) {
-	var totalData = model.TotalParticipantResponse{}
-
-	query := `COUNT(*) AS total_penerima,
-				SUM( status = "DONE" ) AS total_sudah_menerima,
-				SUM( status = "PARTIAL_DONE" ) AS total_partial_done,
-				SUM( status = "NOT DONE" ) AS total_belum_menerima,
-				SUM( status = "REJECTED" ) AS total_data_gugur,
-				0 AS total_quota`
-
-	err := s.db.Table("participants").Select(query).Where(criteria).Find(&totalData).Error
-	if err != nil {
-		helper.CommonLogger().Error(err)
-		fmt.Printf("[participant.service.CountAllStatus] error execute query %v \n", err)
-		return nil, fmt.Errorf("failed count all status")
-	}
-
-	return &totalData, nil
-
-}
-
-func (s *service) CountAllStatusGroup(criteria map[string]interface{}) ([]*model.TotalParticipantListResponse, error) {
-	var list []*model.TotalParticipantListResponse
-
-	query := `provinsi, kota,
-				COUNT(*) AS total_penerima,
-				SUM( status = "DONE" ) AS total_sudah_menerima,
-				SUM( status = "PARTIAL_DONE" ) AS total_partial_done,
-				SUM( status = "NOT DONE" ) AS total_belum_menerima,
-				SUM( status = "REJECTED" ) AS total_data_gugur`
-
-	err := s.db.Debug().Table("participants").Select(query).Where(criteria).Group("provinsi,kota").Order("provinsi ASC").Find(&list).Error
-	if err != nil {
-		helper.CommonLogger().Error(err)
-		fmt.Printf("[participant.service.CountAllStatusGroup] error execute query %v \n", err)
-		return nil, fmt.Errorf("failed view all data")
-	}
-
-	return list, nil
-
 }

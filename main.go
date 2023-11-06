@@ -104,6 +104,7 @@ func main() {
 		participant.PUT("/:id", ph.Update)
 		participant.POST("import", ph.BulkCreate)
 		participant.GET("import", ph.ViewLogs)
+		participant.GET("convertbase64", ph.UpdateImageBase64)
 	}
 
 	region := v1.Group("/region")
