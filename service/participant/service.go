@@ -91,7 +91,7 @@ func (e *service) ReadAllDone() ([]*model.Participant, error) {
 
 func (e *service) UpdateBase64Image(id int, data *request.ConvertToBase64Input) (*model.Participant, error) {
 	var upParticipant = model.Participant{}
-	err := e.db.Table("participants").Where("id = ?", id).Where("status = 'DONE'").First(&upParticipant).Updates(&data).Error
+	err := e.db.Table("participants").Where("id = ?", id).Where("status = ?", "DONE").First(&upParticipant).Updates(&data).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		fmt.Printf("[participant.service.UpdateBase64Image] error execute query %v \n", err)
