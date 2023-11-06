@@ -119,5 +119,5 @@ type ImportParticipant struct {
 }
 
 type ConvertToBase64Input struct {
-	ImagePenerimaBase64 template.URL
+	ImagePenerimaBase64 string
 }

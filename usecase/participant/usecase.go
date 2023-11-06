@@ -796,10 +796,8 @@ func (u *usecase) UpdateImageBase64() (string, error) {
 
 			// Append the base64 encoded output
 			base64Encoding += base64.StdEncoding.EncodeToString(bytes)
-
-			// Print the full base64 representation of the image
-			value.ImagePenerimaBase64 = template.URL(base64Encoding)
-			input := &request.ConvertToBase64Input{ImagePenerimaBase64: value.ImagePenerimaBase64}
+			e
+			input := &request.ConvertToBase64Input{ImagePenerimaBase64: base64Encoding}
 			_, errConvert := u.service.UpdateBase64Image(value.ID, input)
 			if errConvert != nil {
 				helper.CommonLogger().Error(errConvert)
