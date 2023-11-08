@@ -23,9 +23,11 @@ type ParticipantPaged struct {
 }
 
 type ParticipantFilter struct {
-	Provinsi string `form:"provinsi"`
-	Kota     string `form:"kota"`
-	Date     string `form:"date"`
+	Provinsi  string `form:"provinsi"`
+	Kota      string `form:"kota"`
+	Date      string `form:"date"`
+	Kecamatan string `form:"kecamatan"`
+	Kelurahan string `form:"kelurahan"`
 }
 
 type ParticipantInput struct {

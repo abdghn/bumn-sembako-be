@@ -33,8 +33,10 @@ type Usecase interface {
 	ReadById(id int) (*model.Participant, error)
 	Update(id int, input request.UpdateParticipant) (*model.Participant, error)
 	GetTotalDashboard(req request.ParticipantFilter) (*model.TotalParticipantResponse, error)
+	GetTotalDashboardV2(req request.ParticipantFilter) (*model.TotalParticipantResponse, error)
 	BulkCreate(req request.ImportParticipant) (*model.ImportLog, error)
 	Export(input request.Report) (string, error)
+	ExportExcel(req request.ParticipantFilter) (string, error)
 }
 
 type usecase struct {
@@ -232,7 +234,7 @@ func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.Total
 	}
 
 	//m.TotaPenerima = u.service.CountByDate(criteria, date)
-	m.TotaPenerima = u.service.CountByRangeDate(criteria, startDate, endDate)
+	m.TotalPenerima = u.service.CountByRangeDate(criteria, startDate, endDate)
 
 	status = "PARTIAL_DONE"
 	criteria["status"] = status
@@ -262,6 +264,27 @@ func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.Total
 	m.TotalBelumMenerima = u.service.CountByRangeDate(criteria, startDate, endDate)
 
 	return &m, nil
+}
+
+func (u *usecase) GetTotalDashboardV2(req request.ParticipantFilter) (*model.TotalParticipantResponse, error) {
+	criteria := make(map[string]interface{})
+	if req.Provinsi != "" {
+		criteria["provinsi"] = req.Provinsi
+	}
+
+	if req.Kota != "" {
+		criteria["kota"] = req.Kota
+	}
+
+	if req.Kecamatan != "" {
+		criteria["kecamatan"] = req.Kecamatan
+	}
+
+	if req.Kelurahan != "" {
+		criteria["kelurahan"] = req.Kelurahan
+	}
+
+	return u.service.CountAllStatus(criteria)
 }
 
 func (u *usecase) Export(input request.Report) (string, error) {
@@ -758,4 +781,53 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 	}
 
 	return newImportLog, nil
+}
+
+func (u *usecase) ExportExcel(req request.ParticipantFilter) (string, error) {
+	criteria := make(map[string]interface{})
+	xlsx := excelize.NewFile()
+	sheet1Name := "Sheet1"
+	xlsx.SetSheetName(xlsx.GetSheetName(1), sheet1Name)
+	xlsx.SetCellValue(sheet1Name, "A1", "Provinsi")
+	xlsx.SetCellValue(sheet1Name, "B1", "Kota")
+	xlsx.SetCellValue(sheet1Name, "C1", "Total Penerima Bantuan Kota Anda")
+	xlsx.SetCellValue(sheet1Name, "D1", "Sudah Menerima Bantuan")
+	xlsx.SetCellValue(sheet1Name, "E1", "Belum Unggah Foto Penerima Bantuan")
+	xlsx.SetCellValue(sheet1Name, "F1", "Belum Menerima Bantuan")
+	xlsx.SetCellValue(sheet1Name, "G1", "Data Tidak Sesuai")
+
+	if req.Provinsi != "" {
+		criteria["provinsi"] = req.Provinsi
+	}
+
+	if req.Kota != "" {
+		criteria["kota"] = req.Kota
+	}
+
+	rows, err := u.service.CountAllStatusGroup(criteria)
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Print(len(rows))
+
+	for i, row := range rows {
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("A%d", i+2), row.Provinsi)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("B%d", i+2), row.Kota)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("C%d", i+2), row.TotalPenerima)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("D%d", i+2), row.TotalSudahMenerima)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("E%d", i+2), row.TotalPartialDone)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("F%d", i+2), row.TotalBelumMenerima)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("G%d", i+2), row.TotalDataGugur)
+	}
+
+	path := "./uploads"
+	ext := ".xlsx"
+	currentTime := time.Now()
+	filename := currentTime.Format("20060102150405") + "-dashboard" + ext
+	tmpFile := path + "/" + filename
+	err = xlsx.SaveAs(tmpFile)
+
+	return "image/" + filename, nil
+
 }

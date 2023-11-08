@@ -45,12 +45,22 @@ type Participant struct {
 }
 
 type TotalParticipantResponse struct {
-	TotaPenerima       int64 `json:"tota_penerima"`
+	TotalPenerima      int64 `json:"total_penerima"`
 	TotalSudahMenerima int64 `json:"total_sudah_menerima"`
 	TotalPartialDone   int64 `json:"total_partial_done"`
 	TotalBelumMenerima int64 `json:"total_belum_menerima"`
 	TotalDataGugur     int64 `json:"total_data_gugur"`
 	TotalQuota         int64 `json:"total_quota"`
+}
+
+type TotalParticipantListResponse struct {
+	Provinsi           string `json:"provinsi"`
+	Kota               string `json:"kota"`
+	TotalPenerima      int64  `json:"total_penerima"`
+	TotalSudahMenerima int64  `json:"total_sudah_menerima"`
+	TotalPartialDone   int64  `json:"total_partial_done"`
+	TotalBelumMenerima int64  `json:"total_belum_menerima"`
+	TotalDataGugur     int64  `json:"total_data_gugur"`
 }
 
 type Report struct {
@@ -61,5 +71,5 @@ type Report struct {
 	Image    string
 	Address  string
 	ImageB64 template.URL
-	Total int
+	Total    int
 }

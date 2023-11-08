@@ -82,6 +82,7 @@ func main() {
 	v1.POST("login", uh.Login)
 	v1.POST("register", uh.Register)
 	v1.GET("dashboard", ph.ViewDashboard)
+	v1.GET("excel", ph.ExportExcel)
 	v1.POST("report/export", ph.ExportReport)
 	//
 	user := v1.Group("/user")

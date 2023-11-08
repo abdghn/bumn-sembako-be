@@ -28,6 +28,7 @@ type Handler interface {
 	ViewDashboard(c *gin.Context)
 	ExportReport(c *gin.Context)
 	BulkCreate(c *gin.Context)
+	ExportExcel(c *gin.Context)
 }
 
 type handler struct {
@@ -192,7 +193,12 @@ func (h *handler) ViewDashboard(c *gin.Context) {
 		return
 	}
 
-	result, err := h.usecase.GetTotalDashboard(req)
+	result, err := h.usecase.GetTotalDashboardV2(req)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusNotFound, err.Error())
+		return
+	}
 	helper.HandleSuccess(c, result)
 }
 
@@ -292,6 +298,23 @@ func (h *handler) BulkCreate(c *gin.Context) {
 
 }
 
-func (h *handler) ViewAllImportLog(c *gin.Context) {
+func (h *handler) ExportExcel(c *gin.Context) {
+	var req request.ParticipantFilter
+	var err error
+
+	err = c.ShouldBindQuery(&req)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, "Oopss server someting wrong")
+		return
+	}
+
+	result, err := h.usecase.ExportExcel(req)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusNotFound, err.Error())
+		return
+	}
+	helper.HandleSuccess(c, result)
 
 }

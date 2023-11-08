@@ -31,6 +31,8 @@ type Service interface {
 	ReadAllReportByRangeDate(criteria map[string]interface{}, startDate, endDate time.Time) ([]*model.Report, error)
 	GetQuota(criteria map[string]interface{}) (*model.Quota, error)
 	CreateLog(m *model.ImportLog) (*model.ImportLog, error)
+	CountAllStatus(criteria map[string]interface{}) (*model.TotalParticipantResponse, error)
+	CountAllStatusGroup(criteria map[string]interface{}) ([]*model.TotalParticipantListResponse, error)
 }
 
 type service struct {
@@ -272,4 +274,46 @@ func (s *service) CreateLog(m *model.ImportLog) (*model.ImportLog, error) {
 	tx.Commit()
 
 	return m, nil
+}
+
+func (s *service) CountAllStatus(criteria map[string]interface{}) (*model.TotalParticipantResponse, error) {
+	var totalData = model.TotalParticipantResponse{}
+
+	query := `COUNT(*) AS total_penerima,
+				SUM( status = "DONE" ) AS total_sudah_menerima,
+				SUM( status = "PARTIAL_DONE" ) AS total_partial_done,
+				SUM( status = "NOT DONE" ) AS total_belum_menerima,
+				SUM( status = "REJECTED" ) AS total_data_gugur,
+				0 AS total_quota`
+
+	err := s.db.Table("participants").Select(query).Where(criteria).Find(&totalData).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[participant.service.CountAllStatus] error execute query %v \n", err)
+		return nil, fmt.Errorf("failed count all status")
+	}
+
+	return &totalData, nil
+
+}
+
+func (s *service) CountAllStatusGroup(criteria map[string]interface{}) ([]*model.TotalParticipantListResponse, error) {
+	var list []*model.TotalParticipantListResponse
+
+	query := `provinsi, kota,
+				COUNT(*) AS total_penerima,
+				SUM( status = "DONE" ) AS total_sudah_menerima,
+				SUM( status = "PARTIAL_DONE" ) AS total_partial_done,
+				SUM( status = "NOT DONE" ) AS total_belum_menerima,
+				SUM( status = "REJECTED" ) AS total_data_gugur`
+
+	err := s.db.Debug().Table("participants").Select(query).Where(criteria).Group("provinsi,kota").Order("provinsi ASC").Find(&list).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[participant.service.CountAllStatusGroup] error execute query %v \n", err)
+		return nil, fmt.Errorf("failed view all data")
+	}
+
+	return list, nil
+
 }
