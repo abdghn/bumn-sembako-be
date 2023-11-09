@@ -338,7 +338,7 @@ func (u *usecase) Export(input request.Report) (string, error) {
 			// Read the entire file into a byte slice
 			bytes, errorReadFile := os.ReadFile("./uploads/" + arr[1])
 			if errorReadFile != nil {
-				return "", errorReadFile
+				continue
 			}
 
 			var base64Encoding string
