@@ -303,25 +303,25 @@ func (u *usecase) Export(input request.Report) (string, error) {
 		criteria["kota"] = input.Kota
 	}
 
-	if input.Date != "" {
-		//stringDate := req.Date + "T00:00:00.00Z"
-		//date, err = time.Parse(time.RFC3339, stringDate)
-		//if err != nil {
-		//	return nil, err
-		//}
-
-		stringStartDate := input.Date + "T00:00:00.00Z"
-		stringEndDate := input.Date + "T23:59:59.999Z"
-		startDate, err = time.Parse(time.RFC3339, stringStartDate)
-		if err != nil {
-			return "", err
-		}
-
-		endDate, err = time.Parse(time.RFC3339, stringEndDate)
-		if err != nil {
-			return "", err
-		}
-	}
+	//if input.Date != "" {
+	//	//stringDate := req.Date + "T00:00:00.00Z"
+	//	//date, err = time.Parse(time.RFC3339, stringDate)
+	//	//if err != nil {
+	//	//	return nil, err
+	//	//}
+	//
+	//	stringStartDate := input.Date + "T00:00:00.00Z"
+	//	stringEndDate := input.Date + "T23:59:59.999Z"
+	//	startDate, err = time.Parse(time.RFC3339, stringStartDate)
+	//	if err != nil {
+	//		return "", err
+	//	}
+	//
+	//	endDate, err = time.Parse(time.RFC3339, stringEndDate)
+	//	if err != nil {
+	//		return "", err
+	//	}
+	//}
 
 	//reports, err := u.service.ReadAllReport(criteria, date)
 	reports, err := u.service.ReadAllReportByRangeDate(criteria, startDate, endDate)
