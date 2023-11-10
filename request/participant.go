@@ -100,13 +100,14 @@ type PartialDone struct {
 }
 
 type Report struct {
-	Provinsi string        `json:"provinsi"`
-	Kota     string        `json:"kota"`
-	Date     string        `json:"date"`
-	Jam      template.HTML `json:"jam"`
-	Evaluasi template.HTML `json:"evaluasi"`
-	Solusi   template.HTML `json:"solusi"`
-	Url      string
+	Provinsi           string        `json:"provinsi"`
+	Kota               string        `json:"kota"`
+	Date               string        `json:"date"`
+	Jam                template.HTML `json:"jam"`
+	Evaluasi           template.HTML `json:"evaluasi"`
+	Solusi             template.HTML `json:"solusi"`
+	Url                string
+	TotalSudahMenerima int `json:"total_sudah_menerima"`
 }
 
 type ImportParticipant struct {

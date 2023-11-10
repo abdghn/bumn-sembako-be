@@ -73,3 +73,8 @@ type Report struct {
 	ImageB64 template.URL
 	Total    int
 }
+
+type ReportPerFile struct {
+	Name string `json:"name"`
+	Path string `json:"path"`
+}
