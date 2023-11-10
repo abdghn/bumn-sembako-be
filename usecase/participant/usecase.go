@@ -295,7 +295,7 @@ func (u *usecase) Export(input request.Report) ([]*model.ReportPerFile, error) {
 	//var date time.Time
 	var startDate, endDate time.Time
 	var totalData int
-	const limit = 1000
+	const limit = 300
 	criteria := make(map[string]interface{})
 	criteria["status"] = "DONE"
 	if input.Provinsi != "" {
