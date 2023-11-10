@@ -309,7 +309,7 @@ func (u *usecase) Export(input request.Report) ([]*model.ReportPerFile, error) {
 	totalPage := int(math.Ceil(float64(input.TotalSudahMenerima) / float64(limit)))
 
 	fmt.Println(totalPage)
-	for i := 1; i <= totalPage; i++ {
+	for i := 2; i <= totalPage; i++ {
 		reports, err := u.service.ReadAllReportByRangeDate(criteria, startDate, endDate, i, limit)
 		if err != nil {
 			return nil, err
