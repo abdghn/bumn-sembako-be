@@ -871,73 +871,73 @@ func (u *usecase) ExportV2(input request.Report) ([]*model.ReportPerFile, error)
 		criteria["kota"] = input.Kota
 	}
 
-	totalPage := int(math.Ceil(float64(input.TotalSudahMenerima) / float64(limit)))
+	// totalPage := int(math.Ceil(float64(input.TotalSudahMenerima) / float64(limit)))
 
-	for i := 1; i <= totalPage; i++ {
-		reports, err := u.service.ReadAllReportByRangeDate(criteria, startDate, endDate, i, limit)
-		if err != nil {
-			return nil, err
-		}
+	// for i := 1; i <= totalPage; i++ {
+	// 	reports, err := u.service.ReadAllReportByRangeDate(criteria, startDate, endDate, i, limit)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
 
-		if len(reports) > 0 {
-			totalData = reports[0].Total
+	// 	if len(reports) > 0 {
+	// 		totalData = reports[0].Total
 
-		}
+	// 	}
 
-		templateData := struct {
-			Provinsi string
-			Kota     string
-			Date     string
-			Jam      template.HTML
-			Evaluasi template.HTML
-			Solusi   template.HTML
-			Reports  []*model.Report
-			Total    int
-		}{
-			Provinsi: input.Provinsi,
-			Kota:     input.Kota,
-			Date:     input.Date,
-			Jam:      input.Jam,
-			Evaluasi: input.Evaluasi,
-			Solusi:   input.Solusi,
-			Reports:  reports,
-			Total:    totalData,
-		}
+	// 	templateData := struct {
+	// 		Provinsi string
+	// 		Kota     string
+	// 		Date     string
+	// 		Jam      template.HTML
+	// 		Evaluasi template.HTML
+	// 		Solusi   template.HTML
+	// 		Reports  []*model.Report
+	// 		Total    int
+	// 	}{
+	// 		Provinsi: input.Provinsi,
+	// 		Kota:     input.Kota,
+	// 		Date:     input.Date,
+	// 		Jam:      input.Jam,
+	// 		Evaluasi: input.Evaluasi,
+	// 		Solusi:   input.Solusi,
+	// 		Reports:  reports,
+	// 		Total:    totalData,
+	// 	}
 
-		//html template path
-		templatePath := "templates/report-v2.html"
+	// 	//html template path
+	// 	templatePath := "templates/report-v2.html"
 
-		currentTime := time.Now()
-		filename := currentTime.Format("20060102150405") + "-report.pdf"
+	// 	currentTime := time.Now()
+	// 	filename := currentTime.Format("20060102150405") + "-report.pdf"
 
-		//path for download pdf
-		outputPath := "uploads/" + filename
+	// 	//path for download pdf
+	// 	outputPath := "uploads/" + filename
 
-		if err := r.ParseTemplate(templatePath, templateData); err == nil {
+	// 	if err := r.ParseTemplate(templatePath, templateData); err == nil {
 
-			// Generate PDF with custom arguments
-			args := []string{"low-quality"}
+	// 		// Generate PDF with custom arguments
+	// 		args := []string{"low-quality"}
 
-			// Generate PDF
-			ok, errorGenerate := r.GeneratePDF(outputPath, args)
-			if errorGenerate != nil {
-				helper.CommonLogger().Error(errorGenerate)
-				return nil, errorGenerate
-			}
-			fmt.Println(ok, "pdf generated successfully")
-		} else {
-			helper.CommonLogger().Error(err)
-			fmt.Printf("error: %v", err)
-		}
+	// 		// Generate PDF
+	// 		ok, errorGenerate := r.GeneratePDF(outputPath, args)
+	// 		if errorGenerate != nil {
+	// 			helper.CommonLogger().Error(errorGenerate)
+	// 			return nil, errorGenerate
+	// 		}
+	// 		fmt.Println(ok, "pdf generated successfully")
+	// 	} else {
+	// 		helper.CommonLogger().Error(err)
+	// 		fmt.Printf("error: %v", err)
+	// 	}
 
-		r := &model.ReportPerFile{
-			Name: filename,
-			Path: "image/" + filename,
-		}
+	// 	r := &model.ReportPerFile{
+	// 		Name: filename,
+	// 		Path: "image/" + filename,
+	// 	}
 
-		reportPerFile = append(reportPerFile, r)
+	// 	reportPerFile = append(reportPerFile, r)
 
-	}
+	// }
 
 	// if input.Date != "" {
 	// 	//stringDate := req.Date + "T00:00:00.00Z"
@@ -960,6 +960,66 @@ func (u *usecase) ExportV2(input request.Report) ([]*model.ReportPerFile, error)
 	// }
 
 	//reports, err := u.service.ReadAllReport(criteria, date)
+
+	reports, err := u.service.ReadAllReportByRangeDate(criteria, startDate, endDate, 1, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(reports) > 0 {
+		totalData = reports[0].Total
+
+	}
+
+	templateData := struct {
+		Provinsi string
+		Kota     string
+		Date     string
+		Jam      template.HTML
+		Evaluasi template.HTML
+		Solusi   template.HTML
+		Reports  []*model.Report
+		Total    int
+	}{
+		Provinsi: input.Provinsi,
+		Kota:     input.Kota,
+		Date:     input.Date,
+		Jam:      input.Jam,
+		Evaluasi: input.Evaluasi,
+		Solusi:   input.Solusi,
+		Reports:  reports,
+		Total:    totalData,
+	}
+
+	//html template path
+	templatePath := "templates/report-v2.html"
+
+	currentTime := time.Now()
+	filename := currentTime.Format("20060102150405") + "-report.pdf"
+
+	//path for download pdf
+	outputPath := "uploads/" + filename
+
+	if err := r.ParseTemplate(templatePath, templateData); err == nil {
+
+		// Generate PDF with custom arguments
+		args := []string{"low-quality"}
+
+		// Generate PDF
+		ok, errorGenerate := r.GeneratePDF(outputPath, args)
+		if errorGenerate != nil {
+			helper.CommonLogger().Error(errorGenerate)
+			return nil, errorGenerate
+		}
+		fmt.Println(ok, "pdf generated successfully")
+	} else {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("error: %v", err)
+	}
+
+	reportPerFile = append(reportPerFile, &model.ReportPerFile{
+		Name: filename,
+		Path: "image/" + filename})
 
 	return reportPerFile, nil
 }
