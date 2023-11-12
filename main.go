@@ -84,6 +84,9 @@ func main() {
 	v1.GET("dashboard", ph.ViewDashboard)
 	v1.GET("excel", ph.ExportExcel)
 	v1.POST("report/export", ph.ExportReport)
+	v1.POST("report/export-v2", ph.ExportReportV2)
+	v1.GET("photo/:path", ph.ImageHandler)
+	v1.GET("photobase64/:path", ph.ImageBase64Handler)
 	//
 	user := v1.Group("/user")
 	{

@@ -38,6 +38,8 @@ type Usecase interface {
 	BulkCreate(req request.ImportParticipant) (*model.ImportLog, error)
 	ExportExcel(req request.ParticipantFilter) (string, error)
 	Export(input request.Report) ([]*model.ReportPerFile, error)
+	ConvertBase64(path string) template.URL
+	ExportV2(input request.Report) ([]*model.ReportPerFile, error)
 }
 
 type usecase struct {
@@ -849,4 +851,146 @@ func (u *usecase) ExportExcel(req request.ParticipantFilter) (string, error) {
 
 	return "image/" + filename, nil
 
+}
+
+func (u *usecase) ExportV2(input request.Report) ([]*model.ReportPerFile, error) {
+	r := helper.NewRequestPdf("")
+
+	var reportPerFile []*model.ReportPerFile
+	//var date time.Time
+	var startDate, endDate time.Time
+	var totalData int
+	const limit = 100
+	criteria := make(map[string]interface{})
+	criteria["status"] = "DONE"
+	if input.Provinsi != "" {
+		criteria["provinsi"] = input.Provinsi
+	}
+
+	if input.Kota != "" {
+		criteria["kota"] = input.Kota
+	}
+
+	totalPage := int(math.Ceil(float64(input.TotalSudahMenerima) / float64(limit)))
+
+	for i := 1; i <= totalPage; i++ {
+		reports, err := u.service.ReadAllReportByRangeDate(criteria, startDate, endDate, i, limit)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(reports) > 0 {
+			totalData = reports[0].Total
+
+		}
+
+		templateData := struct {
+			Provinsi string
+			Kota     string
+			Date     string
+			Jam      template.HTML
+			Evaluasi template.HTML
+			Solusi   template.HTML
+			Reports  []*model.Report
+			Total    int
+		}{
+			Provinsi: input.Provinsi,
+			Kota:     input.Kota,
+			Date:     input.Date,
+			Jam:      input.Jam,
+			Evaluasi: input.Evaluasi,
+			Solusi:   input.Solusi,
+			Reports:  reports,
+			Total:    totalData,
+		}
+
+		//html template path
+		templatePath := "templates/report-v2.html"
+
+		currentTime := time.Now()
+		filename := currentTime.Format("20060102150405") + "-report.pdf"
+
+		//path for download pdf
+		outputPath := "uploads/" + filename
+
+		if err := r.ParseTemplate(templatePath, templateData); err == nil {
+
+			// Generate PDF with custom arguments
+			args := []string{"low-quality"}
+
+			// Generate PDF
+			ok, errorGenerate := r.GeneratePDF(outputPath, args)
+			if errorGenerate != nil {
+				helper.CommonLogger().Error(errorGenerate)
+				return nil, errorGenerate
+			}
+			fmt.Println(ok, "pdf generated successfully")
+		} else {
+			helper.CommonLogger().Error(err)
+			fmt.Printf("error: %v", err)
+		}
+
+		r := &model.ReportPerFile{
+			Name: filename,
+			Path: "image/" + filename,
+		}
+
+		reportPerFile = append(reportPerFile, r)
+
+	}
+
+	// if input.Date != "" {
+	// 	//stringDate := req.Date + "T00:00:00.00Z"
+	// 	//date, err = time.Parse(time.RFC3339, stringDate)
+	// 	//if err != nil {
+	// 	//	return nil, err
+	// 	//}
+
+	// 	stringStartDate := input.Date + "T00:00:00.00Z"
+	// 	stringEndDate := input.Date + "T23:59:59.999Z"
+	// 	startDate, err = time.Parse(time.RFC3339, stringStartDate)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+
+	// 	endDate, err = time.Parse(time.RFC3339, stringEndDate)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// }
+
+	//reports, err := u.service.ReadAllReport(criteria, date)
+
+	return reportPerFile, nil
+}
+
+func (u *usecase) ConvertBase64(path string) template.URL {
+	arr := strings.SplitAfter(path, "/")
+	//value.Image = "uploads/" + arr[1]
+
+	// Read the entire file into a byte slice
+	bytes, errorReadFile := os.ReadFile("./uploads/" + arr[1])
+	if errorReadFile != nil {
+		return ""
+	}
+
+	var base64Encoding string
+
+	// Determine the content type of the image file
+	mimeType := http.DetectContentType(bytes)
+
+	// Prepend the appropriate URI scheme header depending
+	// on the MIME type
+	switch mimeType {
+	case "image/jpeg":
+		base64Encoding += "data:image/jpeg;base64,"
+	case "image/png":
+		base64Encoding += "data:image/png;base64,"
+	}
+
+	// Append the base64 encoded output
+	base64Encoding += base64.StdEncoding.EncodeToString(bytes)
+
+	// Print the full base64 representation of the image
+	return template.URL(base64Encoding)
 }
