@@ -251,6 +251,60 @@ func (h *handler) ExportReport(c *gin.Context) {
 
 }
 
+func (h *handler) ExportReportV2(c *gin.Context) {
+	var req request.Report
+	var err error
+
+	err = c.ShouldBindJSON(&req)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, "Oopss server someting wrong")
+		return
+	}
+
+	req.Url = fmt.Sprintf("http://%s", c.Request.Host)
+
+	path, err := h.usecase.ExportV2(req)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	//pdfg, err := wkhtmltopdf.NewPDFGenerator()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//f, err := os.Open("./report.html")
+	//if f != nil {
+	//	defer f.Close()
+	//}
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//pdfg.AddPage(wkhtmltopdf.NewPageReader(f))
+	//
+	//pdfg.Orientation.Set(wkhtmltopdf.OrientationPortrait)
+	//pdfg.Dpi.Set(300)
+	//
+	//err = pdfg.Create()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//err = pdfg.WriteFile("./output.pdf")
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//log.Println("Done")
+
+	helper.HandleSuccess(c, path)
+
+}
+
 func (h *handler) BulkCreate(c *gin.Context) {
 	var req request.ImportParticipant
 	var err error
@@ -307,4 +361,27 @@ func (h *handler) UpdateImageBase64(c *gin.Context) {
 
 	helper.HandleSuccess(c, result)
 
+}
+
+func (h *handler) ImageHandler(c *gin.Context) {
+	path := c.Param("path")
+
+	// Read the entire file into a byte slice
+	fileBytes, err := os.ReadFile("./uploads/" + path)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, "Oopss server someting wrong")
+		return
+	}
+
+	mimeType := http.DetectContentType(fileBytes)
+
+	c.Data(http.StatusOK, mimeType, fileBytes)
+}
+
+func (h *handler) ImageBase64Handler(c *gin.Context) {
+	path := c.Param("path")
+	base64Image := h.usecase.ConvertBase64(path)
+
+	c.JSON(http.StatusOK, base64Image)
 }

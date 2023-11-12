@@ -29,7 +29,8 @@ type Service interface {
 	UpdateStatus(id int, status *request.PartialDone) (*model.Participant, error)
 	Create(participant *model.Participant) (*model.Participant, error)
 	ReadAllReport(criteria map[string]interface{}, date time.Time) ([]*model.Report, error)
-	ReadAllReportByRangeDate(criteria map[string]interface{}, startDate, endDate time.Time) ([]*model.Report, error)
+	ReadAllReportByRangeDate(criteria map[string]interface{}, startDate, endDate time.Time, page, size int) ([]*model.Report, error)
+	ReadAllReportByRangeDateV2(criteria map[string]interface{}, startDate, endDate time.Time, page, size int) ([]*model.Report, error)
 	GetQuota(criteria map[string]interface{}) (*model.Quota, error)
 	CreateLog(m *model.ImportLog) (*model.ImportLog, error)
 	UpdateBase64Image(id int, data *request.ConvertToBase64Input) (*model.Participant, error)
@@ -263,6 +264,25 @@ func (s *service) ReadAllReportByRangeDate(criteria map[string]interface{}, star
 
 	}
 	err := query.Order("updated_at ASC").Find(&reports).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[participant.service.ReadAllReportByRangeDate] error execute query %v \n", err)
+		return nil, fmt.Errorf("failed view all data")
+	}
+	return reports, nil
+}
+
+func (s *service) ReadAllReportByRangeDateV2(criteria map[string]interface{}, startDate, endDate time.Time, page, size int) ([]*model.Report, error) {
+	var reports []*model.Report
+
+	query := s.db.Table("participants").Select("ROW_NUMBER() OVER (ORDER BY id) AS No", "nik as NIK", "name AS Name", "SUBSTRING(image_penerima, 7) as Image", "phone AS Phone", "address AS Address", "COUNT(*) OVER() AS Total").Where(criteria)
+	if !startDate.IsZero() && !endDate.IsZero() {
+		query.Where("updated_at <= ? AND updated_at >=  ?", endDate, startDate)
+
+	}
+
+	limit, offset := helper.GetLimitOffset(page, size)
+	err := query.Offset(offset).Limit(limit).Order("updated_at ASC").Find(&reports).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		fmt.Printf("[participant.service.ReadAllReportByRangeDate] error execute query %v \n", err)
