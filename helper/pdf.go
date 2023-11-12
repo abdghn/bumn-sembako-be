@@ -86,6 +86,7 @@ func (r *RequestPdf) GeneratePDF(pdfPath string, args []string) (bool, error) {
 	}
 
 	pageReader := wkhtmltopdf.NewPageReader(f)
+	pageReader.NoBackground.Set(true)
 
 	pageReader.PageOptions.EnableLocalFileAccess.Set(true)
 
