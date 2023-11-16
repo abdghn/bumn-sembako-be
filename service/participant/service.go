@@ -33,6 +33,8 @@ type Service interface {
 	CreateLog(m *model.ImportLog) (*model.ImportLog, error)
 	CountAllStatus(criteria map[string]interface{}) (*model.TotalParticipantResponse, error)
 	CountAllStatusGroup(criteria map[string]interface{}) ([]*model.TotalParticipantListResponse, error)
+	Reset(id int) (*model.Participant, error)
+	Delete(id int) error
 }
 
 type service struct {
@@ -318,4 +320,28 @@ func (s *service) CountAllStatusGroup(criteria map[string]interface{}) ([]*model
 
 	return list, nil
 
+}
+
+func (s *service) Reset(id int) (*model.Participant, error) {
+	var upParticipant = model.Participant{}
+	err := s.db.Table("participants").Where("id = ?", id).First(&upParticipant).Updates(map[string]interface{}{
+		"status": "NOT DONE",
+	}).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[participant.service.Reset] error execute query %v \n", err)
+		return nil, fmt.Errorf("failed update data")
+	}
+	return &upParticipant, nil
+}
+
+func (s *service) Delete(id int) error {
+	var participant = model.Participant{}
+	err := s.db.Table("participants").Where("id = ?", id).First(&participant).Delete(&participant).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[participant.service.Delete] error execute query %v \n", err)
+		return fmt.Errorf("id is not exists")
+	}
+	return nil
 }

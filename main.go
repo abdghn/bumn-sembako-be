@@ -18,11 +18,12 @@ import (
 	regionUsecase "bumn-sembako-be/usecase/region"
 	userUsecase "bumn-sembako-be/usecase/user"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
-	"net/http"
-	"time"
 )
 
 func main() {
@@ -104,6 +105,8 @@ func main() {
 		participant.PUT("/:id", ph.Update)
 		participant.POST("import", ph.BulkCreate)
 		participant.GET("import", ph.ViewLogs)
+		participant.PUT("/reset/:id", ph.Reset)
+		participant.DELETE("/:id", ph.Delete)
 	}
 
 	region := v1.Group("/region")

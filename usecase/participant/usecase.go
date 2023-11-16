@@ -40,6 +40,8 @@ type Usecase interface {
 	Export(input request.Report) ([]*model.ReportPerFile, error)
 	ConvertBase64(path string) template.URL
 	ExportV2(input request.Report) ([]*model.ReportPerFile, error)
+	Reset(id int) (*model.Participant, error)
+	Delete(id int) error
 }
 
 type usecase struct {
@@ -1053,4 +1055,12 @@ func (u *usecase) ConvertBase64(path string) template.URL {
 
 	// Print the full base64 representation of the image
 	return template.URL(base64Encoding)
+}
+
+func (u *usecase) Reset(id int) (*model.Participant, error) {
+	return u.service.Reset(id)
+}
+
+func (u *usecase) Delete(id int) error {
+	return u.service.Delete(id)
 }

@@ -33,6 +33,8 @@ type Handler interface {
 	ExportExcel(c *gin.Context)
 	ImageHandler(c *gin.Context)
 	ImageBase64Handler(c *gin.Context)
+	Reset(c *gin.Context)
+	Delete(c *gin.Context)
 }
 
 type handler struct {
@@ -399,4 +401,39 @@ func (h *handler) ImageBase64Handler(c *gin.Context) {
 	base64Image := h.usecase.ConvertBase64(path)
 
 	c.JSON(http.StatusOK, base64Image)
+}
+
+func (h *handler) Reset(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusBadRequest, "id has be number")
+		return
+	}
+
+	u, err := h.usecase.Reset(id)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusNotFound, err.Error())
+		return
+	}
+	helper.HandleSuccess(c, u)
+}
+
+func (h *handler) Delete(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusBadRequest, "id has be number")
+		return
+	}
+	err = h.usecase.Delete(id)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusNotFound, err.Error())
+		return
+	}
+	helper.HandleSuccess(c, "success delete data")
 }
