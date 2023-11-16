@@ -314,7 +314,7 @@ func (u *usecase) Export(input request.Report) ([]*model.ReportPerFile, error) {
 
 	fmt.Println(totalPage)
 	for i := 1; i <= totalPage; i++ {
-		reports, err := u.service.ReadAllReportByRangeDate(criteria, startDate, endDate, i, limit)
+		reports, err := u.service.ReadAllReportByRangeDateV2(criteria, startDate, endDate, i, limit)
 		if err != nil {
 			return nil, err
 		}
@@ -963,7 +963,7 @@ func (u *usecase) ExportV2(input request.Report) ([]*model.ReportPerFile, error)
 
 	//reports, err := u.service.ReadAllReport(criteria, date)
 
-	reports, err := u.service.ReadAllReportByRangeDate(criteria, startDate, endDate, 1, limit)
+	reports, err := u.service.ReadAllReportByRangeDate(criteria, startDate, endDate)
 	if err != nil {
 		return nil, err
 	}
@@ -1027,11 +1027,11 @@ func (u *usecase) ExportV2(input request.Report) ([]*model.ReportPerFile, error)
 }
 
 func (u *usecase) ConvertBase64(path string) template.URL {
-	arr := strings.SplitAfter(path, "/")
+	// arr := strings.SplitAfter(path, "/")
 	//value.Image = "uploads/" + arr[1]
 
 	// Read the entire file into a byte slice
-	bytes, errorReadFile := os.ReadFile("./uploads/" + arr[1])
+	bytes, errorReadFile := os.ReadFile("./uploads/" + path)
 	if errorReadFile != nil {
 		return ""
 	}

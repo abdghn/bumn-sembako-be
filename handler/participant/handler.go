@@ -275,7 +275,7 @@ func (h *handler) ExportReportV2(c *gin.Context) {
 
 	req.Url = fmt.Sprintf("http://%s", c.Request.Host)
 
-	path, err := h.usecase.Export(req)
+	path, err := h.usecase.ExportV2(req)
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		helper.HandleError(c, http.StatusInternalServerError, err.Error())
