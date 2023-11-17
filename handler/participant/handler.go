@@ -143,7 +143,7 @@ func (h *handler) Update(c *gin.Context) {
 		// generate new file name
 		ext := filepath.Ext(file.Filename)
 		currentTime := time.Now()
-		filename := currentTime.Format("20060102150405") + "-image" + ext
+		filename := currentTime.Format("20060102150405") + "-image" + "-" + idStr + ext
 
 		tmpFile := path + "/" + filename
 		if err = c.SaveUploadedFile(file, tmpFile); err != nil {
@@ -167,7 +167,7 @@ func (h *handler) Update(c *gin.Context) {
 		// generate new file name
 		ext := filepath.Ext(file.Filename)
 		currentTime := time.Now()
-		filename := currentTime.Format("20060102150405") + "-image-penerima" + ext
+		filename := currentTime.Format("20060102150405") + "-image-penerima" + "-" + idStr + ext
 
 		tmpFile := path + "/" + filename
 		if err = c.SaveUploadedFile(file, tmpFile); err != nil {

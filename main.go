@@ -27,6 +27,7 @@ import (
 )
 
 func main() {
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
 	viper.SetConfigFile(".env")

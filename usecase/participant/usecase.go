@@ -299,7 +299,7 @@ func (u *usecase) Export(input request.Report) ([]*model.ReportPerFile, error) {
 	//var date time.Time
 	var startDate, endDate time.Time
 	var totalData int
-	const limit = 100
+	const limit = 500
 	criteria := make(map[string]interface{})
 	criteria["status"] = "DONE"
 	if input.Provinsi != "" {
@@ -324,40 +324,40 @@ func (u *usecase) Export(input request.Report) ([]*model.ReportPerFile, error) {
 
 		}
 
-		for _, value := range reports {
-			if value.Image != "" {
-
-				arr := strings.SplitAfter(value.Image, "/")
-				//value.Image = "uploads/" + arr[1]
-
-				// Read the entire file into a byte slice
-				bytes, errorReadFile := os.ReadFile("./uploads/" + arr[1])
-				if errorReadFile != nil {
-					continue
-				}
-
-				var base64Encoding string
-
-				// Determine the content type of the image file
-				mimeType := http.DetectContentType(bytes)
-
-				// Prepend the appropriate URI scheme header depending
-				// on the MIME type
-				switch mimeType {
-				case "image/jpeg":
-					base64Encoding += "data:image/jpeg;base64,"
-				case "image/png":
-					base64Encoding += "data:image/png;base64,"
-				}
-
-				// Append the base64 encoded output
-				base64Encoding += base64.StdEncoding.EncodeToString(bytes)
-
-				// Print the full base64 representation of the image
-				value.ImageB64 = template.URL(base64Encoding)
-			}
-
-		}
+		//for _, value := range reports {
+		//	if value.Image != "" {
+		//
+		//		arr := strings.SplitAfter(value.Image, "/")
+		//		//value.Image = "uploads/" + arr[1]
+		//
+		//		// Read the entire file into a byte slice
+		//		bytes, errorReadFile := os.ReadFile("./uploads/" + arr[1])
+		//		if errorReadFile != nil {
+		//			continue
+		//		}
+		//
+		//		var base64Encoding string
+		//
+		//		// Determine the content type of the image file
+		//		mimeType := http.DetectContentType(bytes)
+		//
+		//		// Prepend the appropriate URI scheme header depending
+		//		// on the MIME type
+		//		switch mimeType {
+		//		case "image/jpeg":
+		//			base64Encoding += "data:image/jpeg;base64,"
+		//		case "image/png":
+		//			base64Encoding += "data:image/png;base64,"
+		//		}
+		//
+		//		// Append the base64 encoded output
+		//		base64Encoding += base64.StdEncoding.EncodeToString(bytes)
+		//
+		//		// Print the full base64 representation of the image
+		//		value.ImageB64 = template.URL(base64Encoding)
+		//	}
+		//
+		//}
 
 		templateData := struct {
 			Provinsi string
