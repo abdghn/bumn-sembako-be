@@ -202,11 +202,11 @@ func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.Total
 
 	criteria := make(map[string]interface{})
 	if req.Provinsi != "" {
-		criteria["provinsi"] = req.Provinsi
+		criteria["residence_provinsi"] = req.Provinsi
 	}
 
 	if req.Kota != "" {
-		criteria["kota"] = req.Kota
+		criteria["residence_kota"] = req.Kota
 	}
 
 	dataQuota, err := u.service.GetQuota(criteria)
@@ -274,19 +274,19 @@ func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.Total
 func (u *usecase) GetTotalDashboardV2(req request.ParticipantFilter) (*model.TotalParticipantResponse, error) {
 	criteria := make(map[string]interface{})
 	if req.Provinsi != "" {
-		criteria["provinsi"] = req.Provinsi
+		criteria["residence_provinsi"] = req.Provinsi
 	}
 
 	if req.Kota != "" {
-		criteria["kota"] = req.Kota
+		criteria["residence_kota"] = req.Kota
 	}
 
 	if req.Kecamatan != "" {
-		criteria["kecamatan"] = req.Kecamatan
+		criteria["residence_kecamatan"] = req.Kecamatan
 	}
 
 	if req.Kelurahan != "" {
-		criteria["kelurahan"] = req.Kelurahan
+		criteria["residence_kelurahan"] = req.Kelurahan
 	}
 
 	return u.service.CountAllStatus(criteria)
@@ -303,11 +303,11 @@ func (u *usecase) Export(input request.Report) ([]*model.ReportPerFile, error) {
 	criteria := make(map[string]interface{})
 	criteria["status"] = "DONE"
 	if input.Provinsi != "" {
-		criteria["provinsi"] = input.Provinsi
+		criteria["residence_provinsi"] = input.Provinsi
 	}
 
 	if input.Kota != "" {
-		criteria["kota"] = input.Kota
+		criteria["residence_kota"] = input.Kota
 	}
 
 	totalPage := int(math.Ceil(float64(input.TotalSudahMenerima) / float64(limit)))
@@ -820,11 +820,11 @@ func (u *usecase) ExportExcel(req request.ParticipantFilter) (string, error) {
 	xlsx.SetCellValue(sheet1Name, "G1", "Data Tidak Sesuai")
 
 	if req.Provinsi != "" {
-		criteria["provinsi"] = req.Provinsi
+		criteria["residence_provinsi"] = req.Provinsi
 	}
 
 	if req.Kota != "" {
-		criteria["kota"] = req.Kota
+		criteria["residence_kota"] = req.Kota
 	}
 
 	rows, err := u.service.CountAllStatusGroup(criteria)
@@ -866,11 +866,11 @@ func (u *usecase) ExportV2(input request.Report) ([]*model.ReportPerFile, error)
 	criteria := make(map[string]interface{})
 	criteria["status"] = "DONE"
 	if input.Provinsi != "" {
-		criteria["provinsi"] = input.Provinsi
+		criteria["residence_provinsi"] = input.Provinsi
 	}
 
 	if input.Kota != "" {
-		criteria["kota"] = input.Kota
+		criteria["residence_kota"] = input.Kota
 	}
 
 	// totalPage := int(math.Ceil(float64(input.TotalSudahMenerima) / float64(limit)))

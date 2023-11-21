@@ -15,33 +15,33 @@ import (
 
 type Participant struct {
 	ID                 int            `json:"id" gorm:"primary_key"`
-	Name               string         `json:"name"`
-	NIK                string         `json:"nik"`
-	Gender             string         `json:"gender"`
-	Phone              string         `json:"phone"`
-	Address            string         `json:"address"`
-	RT                 string         `json:"rt"`
-	RW                 string         `json:"rw"`
-	Provinsi           string         `json:"provinsi"`
-	Kota               string         `json:"kota"`
-	Kecamatan          string         `json:"kecamatan"`
-	Kelurahan          string         `json:"kelurahan"`
-	KodePOS            string         `json:"kode_pos"`
-	ResidenceAddress   string         `json:"residence_address"`
-	ResidenceRT        string         `json:"residence_rt"`
-	ResidenceRW        string         `json:"residence_rw"`
-	ResidenceProvinsi  string         `json:"residence_provinsi"`
-	ResidenceKota      string         `json:"residence_kota"`
-	ResidenceKecamatan string         `json:"residence_kecamatan"`
-	ResidenceKelurahan string         `json:"residence_kelurahan"`
-	ResidenceKodePOS   string         `json:"residence_kode_pos"`
-	Status             string         `json:"status"`
+	Name               string         `json:"name" gorm:"type:varchar(255)"`
+	NIK                string         `json:"nik" gorm:"type:varchar(255)"`
+	Gender             string         `json:"gender" gorm:"type:varchar(255)"`
+	Phone              string         `json:"phone" gorm:"type:varchar(255)"`
+	Address            string         `json:"address" gorm:"type: text"`
+	RT                 string         `json:"rt" gorm:"type:varchar(255)"`
+	RW                 string         `json:"rw" gorm:"type:varchar(255)"`
+	Provinsi           string         `json:"provinsi" gorm:"type:varchar(255)"`
+	Kota               string         `json:"kota" gorm:"type:varchar(255)"`
+	Kecamatan          string         `json:"kecamatan" gorm:"type:varchar(255)"`
+	Kelurahan          string         `json:"kelurahan" gorm:"type:varchar(255)"`
+	KodePOS            string         `json:"kode_pos" gorm:"type:varchar(255)"`
+	ResidenceAddress   string         `json:"residence_address" gorm:"type: text"`
+	ResidenceRT        string         `json:"residence_rt" gorm:"type:varchar(255)"`
+	ResidenceRW        string         `json:"residence_rw" gorm:"type:varchar(255)"`
+	ResidenceProvinsi  string         `json:"residence_provinsi" gorm:"type:varchar(255)"`
+	ResidenceKota      string         `json:"residence_kota" gorm:"type:varchar(255)"`
+	ResidenceKecamatan string         `json:"residence_kecamatan" gorm:"type:varchar(255)"`
+	ResidenceKelurahan string         `json:"residence_kelurahan" gorm:"type:varchar(255)"`
+	ResidenceKodePOS   string         `json:"residence_kode_pos" gorm:"type:varchar(255)"`
+	Status             string         `json:"status" gorm:"type:varchar(255)"`
 	Image              string         `json:"image" gorm:"type: text"`
 	ImagePenerima      string         `json:"image_penerima" gorm:"type: text"`
 	IsRepresented      bool           `json:"is_represented" gorm:"default:false"`
 	HasPrinted         bool           `json:"has_represented" gorm:"default:false"`
-	UpdatedBy          string         `json:"updated_by"`
-	Reference          string         `json:"reference" gorm:"type:varchar(255)"`
+	UpdatedBy          string         `json:"updated_by" gorm:"type:varchar(100)"`
+	Reference          string         `json:"reference" gorm:"type: text"`
 	CreatedAt          time.Time      `json:"created_at"`
 	UpdatedAt          time.Time      `json:"updated_at"`
 	DeletedAt          gorm.DeletedAt `sql:"index" json:"deleted_at" gorm:"index"`
