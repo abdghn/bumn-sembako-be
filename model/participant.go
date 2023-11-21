@@ -22,16 +22,16 @@ type Participant struct {
 	Address            string         `json:"address" gorm:"type: text"`
 	RT                 string         `json:"rt" gorm:"type:varchar(255)"`
 	RW                 string         `json:"rw" gorm:"type:varchar(255)"`
-	Provinsi           string         `json:"provinsi" gorm:"type:varchar(255)"`
-	Kota               string         `json:"kota" gorm:"type:varchar(255)"`
-	Kecamatan          string         `json:"kecamatan" gorm:"type:varchar(255)"`
-	Kelurahan          string         `json:"kelurahan" gorm:"type:varchar(255)"`
+	Provinsi           string         `sql:"index" json:"provinsi" gorm:"type:varchar(255);index"`
+	Kota               string         `sql:"index" json:"kota" gorm:"type:varchar(255);index"`
+	Kecamatan          string         `sql:"index" json:"kecamatan" gorm:"type:varchar(255);index"`
+	Kelurahan          string         `sql:"index" json:"kelurahan" gorm:"type:varchar(255);index"`
 	KodePOS            string         `json:"kode_pos" gorm:"type:varchar(255)"`
 	ResidenceAddress   string         `json:"residence_address" gorm:"type: text"`
 	ResidenceRT        string         `json:"residence_rt" gorm:"type:varchar(255)"`
 	ResidenceRW        string         `json:"residence_rw" gorm:"type:varchar(255)"`
-	ResidenceProvinsi  string         `json:"residence_provinsi" gorm:"type:varchar(255)"`
-	ResidenceKota      string         `json:"residence_kota" gorm:"type:varchar(255)"`
+	ResidenceProvinsi  string         `sql:"index" json:"residence_provinsi" gorm:"type:varchar(255);index"`
+	ResidenceKota      string         `sql:"index" json:"residence_kota" gorm:"type:varchar(255);index"`
 	ResidenceKecamatan string         `json:"residence_kecamatan" gorm:"type:varchar(255)"`
 	ResidenceKelurahan string         `json:"residence_kelurahan" gorm:"type:varchar(255)"`
 	ResidenceKodePOS   string         `json:"residence_kode_pos" gorm:"type:varchar(255)"`
