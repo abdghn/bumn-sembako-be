@@ -104,6 +104,7 @@ func main() {
 		participant.GET("", ph.ViewParticipants)
 		participant.GET("/:id", ph.ViewParticipant)
 		participant.PUT("/:id", ph.Update)
+		participant.PUT("/edit/:id", ph.Edit)
 		participant.POST("import", ph.BulkCreate)
 		participant.GET("import", ph.ViewLogs)
 		participant.PUT("/reset/:id", ph.Reset)

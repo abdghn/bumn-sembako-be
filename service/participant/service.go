@@ -24,7 +24,7 @@ type Service interface {
 	CountLogs(criteria map[string]interface{}) int64
 	CountByDate(criteria map[string]interface{}, date time.Time) int64
 	CountByRangeDate(criteria map[string]interface{}, startDate, endDate time.Time) int64
-	Update(id int, participant request.UpdateParticipant) (*model.Participant, error)
+	Update(id int, participant *request.ParticipantEditInput) (*model.Participant, error)
 	UpdateStatus(id int, status *request.PartialDone) (*model.Participant, error)
 	Create(participant *model.Participant) (*model.Participant, error)
 	ReadAllReport(criteria map[string]interface{}, date time.Time) ([]*model.Report, error)
@@ -180,7 +180,7 @@ func (s *service) CountByRangeDate(criteria map[string]interface{}, startDate, e
 	return result
 }
 
-func (e *service) Update(id int, participant request.UpdateParticipant) (*model.Participant, error) {
+func (e *service) Update(id int, participant *request.ParticipantEditInput) (*model.Participant, error) {
 	var upParticipant = model.Participant{}
 	err := e.db.Table("participants").Where("id = ?", id).First(&upParticipant).Updates(&participant).Error
 	if err != nil {

@@ -25,6 +25,7 @@ type Handler interface {
 	ViewParticipants(c *gin.Context)
 	ViewLogs(c *gin.Context)
 	ViewParticipant(c *gin.Context)
+	Edit(c *gin.Context)
 	Update(c *gin.Context)
 	ViewDashboard(c *gin.Context)
 	ExportReport(c *gin.Context)
@@ -186,6 +187,78 @@ func (h *handler) Update(c *gin.Context) {
 		return
 	}
 	helper.HandleSuccess(c, updatedParticipant)
+}
+
+func (h *handler) Edit(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusBadRequest, "id has be number")
+		return
+	}
+
+	var tempParticipant request.UpdateParticipant
+
+	err = c.ShouldBind(&tempParticipant)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, "Oopss server someting wrong")
+		return
+	}
+
+	if tempParticipant.File != nil {
+		path := "./uploads"
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			_ = os.Mkdir(path, os.ModePerm)
+		}
+
+		file := tempParticipant.File
+
+		// generate new file name
+		ext := filepath.Ext(file.Filename)
+		currentTime := time.Now()
+		filename := currentTime.Format("20060102150405") + "-image" + "-" + idStr + ext
+
+		tmpFile := path + "/" + filename
+		if err = c.SaveUploadedFile(file, tmpFile); err != nil {
+			helper.HandleError(c, http.StatusBadRequest, "failed to saving image")
+			return
+		}
+
+		tempParticipant.Image = "image/" + filename
+	}
+
+	if tempParticipant.FilePenerima != nil {
+		path := "./uploads"
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			_ = os.Mkdir(path, os.ModePerm)
+		}
+
+		file := tempParticipant.FilePenerima
+
+		// generate new file name
+		ext := filepath.Ext(file.Filename)
+		currentTime := time.Now()
+		filename := currentTime.Format("20060102150405") + "-image-penerima" + "-" + idStr + ext
+
+		tmpFile := path + "/" + filename
+		if err = c.SaveUploadedFile(file, tmpFile); err != nil {
+			helper.HandleError(c, http.StatusBadRequest, "failed to saving image")
+			return
+		}
+
+		tempParticipant.ImagePenerima = "image/" + filename
+	}
+
+	updatedParticipant, err := h.usecase.Edit(id, tempParticipant)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	helper.HandleSuccess(c, updatedParticipant)
+
 }
 
 func (h *handler) ViewDashboard(c *gin.Context) {

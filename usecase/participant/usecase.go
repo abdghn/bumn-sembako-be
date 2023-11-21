@@ -33,6 +33,7 @@ type Usecase interface {
 	CountLogs(req request.ParticipantPaged) int64
 	ReadById(id int) (*model.Participant, error)
 	Update(id int, input request.UpdateParticipant) (*model.Participant, error)
+	Edit(id int, input request.UpdateParticipant) (*model.Participant, error)
 	GetTotalDashboard(req request.ParticipantFilter) (*model.TotalParticipantResponse, error)
 	GetTotalDashboardV2(req request.ParticipantFilter) (*model.TotalParticipantResponse, error)
 	BulkCreate(req request.ImportParticipant) (*model.ImportLog, error)
@@ -190,6 +191,59 @@ func (u *usecase) Update(id int, input request.UpdateParticipant) (*model.Partic
 	}
 
 	return participant, nil
+
+}
+
+func (u *usecase) Edit(id int, input request.UpdateParticipant) (*model.Participant, error) {
+	var err error
+	model, err := u.ReadById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	req := &request.ParticipantEditInput{
+		Name:               input.Name,
+		NIK:                input.NIK,
+		Gender:             input.Gender,
+		Phone:              input.Phone,
+		Address:            input.Address,
+		RT:                 input.RT,
+		RW:                 input.RW,
+		Provinsi:           input.Provinsi,
+		Kota:               input.Kota,
+		Kecamatan:          input.Kecamatan,
+		Kelurahan:          input.Kelurahan,
+		KodePOS:            input.KodePOS,
+		ResidenceAddress:   input.ResidenceAddress,
+		ResidenceRT:        input.ResidenceRT,
+		ResidenceRW:        input.ResidenceRW,
+		ResidenceProvinsi:  input.ResidenceProvinsi,
+		ResidenceKota:      input.ResidenceKota,
+		ResidenceKecamatan: input.ResidenceKecamatan,
+		ResidenceKelurahan: input.ResidenceKelurahan,
+		ResidenceKodePOS:   input.ResidenceKodePOS,
+		Status:             input.Status,
+		UpdatedBy:          model.UpdatedBy,
+	}
+
+	if input.Image != "" {
+		req.Image = input.Image
+	} else {
+		req.Image = model.Image
+	}
+
+	if input.ImagePenerima != "" {
+		req.ImagePenerima = input.ImagePenerima
+	} else {
+		req.ImagePenerima = model.ImagePenerima
+	}
+
+	updatedParticipant, err := u.service.Update(id, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return updatedParticipant, err
 
 }
 
