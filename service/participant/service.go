@@ -102,7 +102,7 @@ func (e *service) ReadAllLogBy(criteria map[string]interface{}, search string, p
 
 func (s *service) ReadById(id int) (*model.Participant, error) {
 	var participant = model.Participant{}
-	err := s.db.Table("participants").Where("id = ?", id).First(&participant).Error
+	err := s.db.Table("participants").Where("id = ?", id).Where("deleted_at IS NULL").First(&participant).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		fmt.Printf("[participant.service.ReadById] error execute query %v \n", err)
@@ -167,7 +167,7 @@ func (s *service) CountByDate(criteria map[string]interface{}, date time.Time) i
 
 func (s *service) CountByRangeDate(criteria map[string]interface{}, startDate, endDate time.Time) int64 {
 	var result int64
-	query := s.db.Table("participants").Where(criteria)
+	query := s.db.Table("participants").Where(criteria).Where("deleted_at IS NULL")
 	if !startDate.IsZero() && !endDate.IsZero() {
 		query.Where("updated_at <= ? AND updated_at >=  ?", endDate, startDate)
 
@@ -221,7 +221,7 @@ func (e *service) Create(participant *model.Participant) (*model.Participant, er
 func (s *service) ReadAllReport(criteria map[string]interface{}, date time.Time) ([]*model.Report, error) {
 	var reports []*model.Report
 
-	query := s.db.Table("participants").Select("ROW_NUMBER() OVER (ORDER BY id) AS No", "nik as NIK", "name AS Name", "image_penerima as Image", "phone AS Phone", "address AS Address", "COUNT(*) OVER() AS Total").Where(criteria)
+	query := s.db.Table("participants").Select("ROW_NUMBER() OVER (ORDER BY id) AS No", "nik as NIK", "name AS Name", "image_penerima as Image", "phone AS Phone", "address AS Address", "COUNT(*) OVER() AS Total").Where("deleted_at IS NULL").Where(criteria)
 	if !date.IsZero() {
 		query.Where("updated_at < ?", date)
 
@@ -238,7 +238,7 @@ func (s *service) ReadAllReport(criteria map[string]interface{}, date time.Time)
 func (s *service) ReadAllReportByRangeDate(criteria map[string]interface{}, startDate, endDate time.Time) ([]*model.Report, error) {
 	var reports []*model.Report
 
-	query := s.db.Table("participants").Select("ROW_NUMBER() OVER (ORDER BY id) AS No", "nik as NIK", "name AS Name", "SUBSTRING(image_penerima, 7) as Image", "phone AS Phone", "address AS Address", "COUNT(*) OVER() AS Total").Where(criteria)
+	query := s.db.Table("participants").Select("ROW_NUMBER() OVER (ORDER BY id) AS No", "nik as NIK", "name AS Name", "SUBSTRING(image_penerima, 7) as Image", "phone AS Phone", "address AS Address", "COUNT(*) OVER() AS Total").Where("deleted_at IS NULL").Where(criteria)
 	if !startDate.IsZero() && !endDate.IsZero() {
 		query.Where("updated_at <= ? AND updated_at >=  ?", endDate, startDate)
 
@@ -258,7 +258,7 @@ func (s *service) ReadAllReportByRangeDate(criteria map[string]interface{}, star
 func (s *service) ReadAllReportByRangeDateV2(criteria map[string]interface{}, startDate, endDate time.Time, page, size int) ([]*model.Report, error) {
 	var reports []*model.Report
 
-	query := s.db.Table("participants").Select("ROW_NUMBER() OVER (ORDER BY id) AS No", "nik as NIK", "name AS Name", "SUBSTRING(image_penerima, 7) as Image", "phone AS Phone", "address AS Address", "COUNT(*) OVER() AS Total").Where(criteria)
+	query := s.db.Table("participants").Select("ROW_NUMBER() OVER (ORDER BY id) AS No", "nik as NIK", "name AS Name", "SUBSTRING(image_penerima, 7) as Image", "phone AS Phone", "address AS Address", "COUNT(*) OVER() AS Total").Where("deleted_at IS NULL").Where(criteria)
 	if !startDate.IsZero() && !endDate.IsZero() {
 		query.Where("updated_at <= ? AND updated_at >=  ?", endDate, startDate)
 
@@ -280,9 +280,9 @@ func (s *service) ReadAllReportByRangeDateV3(criteria map[string]interface{}, st
 	var ids []int
 	var reports []*model.Report
 
-	s.db.Table("participants").Select("id").Find(&ids)
+	s.db.Table("participants").Select("id").Where("deleted_at IS NULL").Find(&ids)
 
-	query := s.db.Table("participants").Select("ROW_NUMBER() OVER (ORDER BY id) AS No", "nik as NIK", "name AS Name", "SUBSTRING(image_penerima, 7) as Image", "phone AS Phone", "address AS Address", "COUNT(*) OVER() AS Total").Where(criteria)
+	query := s.db.Table("participants").Select("ROW_NUMBER() OVER (ORDER BY id) AS No", "nik as NIK", "name AS Name", "SUBSTRING(image_penerima, 7) as Image", "phone AS Phone", "address AS Address", "COUNT(*) OVER() AS Total").Where("deleted_at IS NULL").Where(criteria)
 	query.Where("id IN (?)", ids)
 	if !startDate.IsZero() && !endDate.IsZero() {
 		query.Where("updated_at <= ? AND updated_at >=  ?", endDate, startDate)
@@ -339,7 +339,7 @@ func (s *service) CountAllStatus(criteria map[string]interface{}) (*model.TotalP
 				SUM( status = "REJECTED" ) AS total_data_gugur,
 				0 AS total_quota`
 
-	err := s.db.Table("participants").Select(query).Where(criteria).Find(&totalData).Error
+	err := s.db.Table("participants").Select(query).Where("deleted_at IS NULL").Where(criteria).Find(&totalData).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		fmt.Printf("[participant.service.CountAllStatus] error execute query %v \n", err)
@@ -360,7 +360,7 @@ func (s *service) CountAllStatusGroup(criteria map[string]interface{}) ([]*model
 				SUM( status = "NOT DONE" ) AS total_belum_menerima,
 				SUM( status = "REJECTED" ) AS total_data_gugur`
 
-	err := s.db.Table("participants").Select(query).Where(criteria).Group("provinsi,kota").Order("provinsi ASC").Find(&list).Error
+	err := s.db.Table("participants").Select(query).Where("deleted_at IS NULL").Where(criteria).Group("provinsi,kota").Order("provinsi ASC").Find(&list).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		fmt.Printf("[participant.service.CountAllStatusGroup] error execute query %v \n", err)
