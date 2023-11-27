@@ -353,14 +353,14 @@ func (s *service) CountAllStatus(criteria map[string]interface{}) (*model.TotalP
 func (s *service) CountAllStatusGroup(criteria map[string]interface{}) ([]*model.TotalParticipantListResponse, error) {
 	var list []*model.TotalParticipantListResponse
 
-	query := `provinsi, kota,
+	query := `residence_provinsi, residence_kota,
 				COUNT(*) AS total_penerima,
 				SUM( status = "DONE" ) AS total_sudah_menerima,
 				SUM( status = "PARTIAL_DONE" ) AS total_partial_done,
 				SUM( status = "NOT DONE" ) AS total_belum_menerima,
 				SUM( status = "REJECTED" ) AS total_data_gugur`
 
-	err := s.db.Table("participants").Select(query).Where("deleted_at IS NULL").Where(criteria).Group("provinsi,kota").Order("provinsi ASC").Find(&list).Error
+	err := s.db.Table("participants").Select(query).Where("deleted_at IS NULL").Where(criteria).Group("residence_provinsi, residence_kota").Order("residence_provinsi ASC").Find(&list).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		fmt.Printf("[participant.service.CountAllStatusGroup] error execute query %v \n", err)
