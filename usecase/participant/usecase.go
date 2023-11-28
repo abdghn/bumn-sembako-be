@@ -889,8 +889,8 @@ func (u *usecase) ExportExcel(req request.ParticipantFilter) (string, error) {
 	fmt.Print(len(rows))
 
 	for i, row := range rows {
-		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("A%d", i+2), row.Provinsi)
-		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("B%d", i+2), row.Kota)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("A%d", i+2), row.ResidenceProvinsi)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("B%d", i+2), row.ResidenceKota)
 		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("C%d", i+2), row.TotalPenerima)
 		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("D%d", i+2), row.TotalSudahMenerima)
 		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("E%d", i+2), row.TotalPartialDone)
@@ -904,6 +904,9 @@ func (u *usecase) ExportExcel(req request.ParticipantFilter) (string, error) {
 	filename := currentTime.Format("20060102150405") + "-dashboard" + ext
 	tmpFile := path + "/" + filename
 	err = xlsx.SaveAs(tmpFile)
+	if err != nil {
+		return "", nil
+	}
 
 	return "image/" + filename, nil
 

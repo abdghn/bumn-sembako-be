@@ -57,8 +57,8 @@ type TotalParticipantResponse struct {
 }
 
 type TotalParticipantListResponse struct {
-	Provinsi           string `json:"provinsi"`
-	Kota               string `json:"kota"`
+	ResidenceProvinsi  string `json:"residence_provinsi"`
+	ResidenceKota      string `json:"residence_kota"`
 	TotalPenerima      int64  `json:"total_penerima"`
 	TotalSudahMenerima int64  `json:"total_sudah_menerima"`
 	TotalPartialDone   int64  `json:"total_partial_done"`
