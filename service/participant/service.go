@@ -360,7 +360,7 @@ func (s *service) CountAllStatusGroup(criteria map[string]interface{}) ([]*model
 				SUM( status = "NOT DONE" ) AS total_belum_menerima,
 				SUM( status = "REJECTED" ) AS total_data_gugur`
 
-	err := s.db.Table("participants").Select(query).Where("deleted_at IS NULL").Where(criteria).Group("residence_provinsi, residence_kota").Order("residence_provinsi ASC").Find(&list).Error
+	err := s.db.Debug().Table("participants").Select(query).Where("deleted_at IS NULL").Where(criteria).Group("residence_provinsi, residence_kota").Order("residence_provinsi ASC").Find(&list).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		fmt.Printf("[participant.service.CountAllStatusGroup] error execute query %v \n", err)
