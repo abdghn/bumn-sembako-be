@@ -132,6 +132,7 @@ type Report struct {
 	Kota               string        `json:"kota"`
 	Date               string        `json:"date"`
 	Jam                template.HTML `json:"jam"`
+	HasPrinted         string        `json:"has_printed"`
 	Evaluasi           template.HTML `json:"evaluasi"`
 	Solusi             template.HTML `json:"solusi"`
 	Url                string

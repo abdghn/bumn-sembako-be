@@ -365,6 +365,15 @@ func (u *usecase) Export(input request.Report) ([]*model.ReportPerFile, error) {
 		criteria["residence_kota"] = input.Kota
 	}
 
+	if !(input.HasPrinted == "ALL") || input.HasPrinted != ""{
+		if input.HasPrinted == "PRINTED" {
+			criteria["has_printed"] = true
+		} else {
+			criteria["has_printed"] = false
+		}
+	}
+
+
 	totalPage := int(math.Ceil(float64(input.TotalSudahMenerima) / float64(limit)))
 
 	for i := 1; i <= totalPage; i++ {
