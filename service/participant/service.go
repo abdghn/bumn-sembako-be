@@ -20,6 +20,7 @@ type Service interface {
 	ReadAllBy(criteria map[string]interface{}, search string, page, size int) (*[]model.Participant, error)
 	ReadAllLogBy(criteria map[string]interface{}, search string, page, size int) ([]model.ImportLog, error)
 	ReadById(id int) (*model.Participant, error)
+	ReadBy(criteria map[string]interface{}) ([]*model.Participant, error)
 	Count(criteria map[string]interface{}, search string) int64
 	CountLogs(criteria map[string]interface{}) int64
 	CountByDate(criteria map[string]interface{}, date time.Time) int64
@@ -37,6 +38,8 @@ type Service interface {
 	CountAllStatusGroup(criteria map[string]interface{}) ([]*model.TotalParticipantListResponse, error)
 	Reset(id int) (*model.Participant, error)
 	Delete(id int) error
+	DeleteBy(criteria map[string]interface{}) error
+	ReadAllDuplicates() ([]*model.Participant, error)
 }
 
 type service struct {
@@ -111,9 +114,20 @@ func (s *service) ReadById(id int) (*model.Participant, error) {
 	return &participant, nil
 }
 
+func (s *service) ReadBy(criteria map[string]interface{}) ([]*model.Participant, error) {
+	var participants []*model.Participant
+	err := s.db.Table("participants").Where(criteria).Where("deleted_at IS NULL").First(&participants).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[participant.service.ReadBy] error execute query %v \n", err)
+		return nil, fmt.Errorf("id is not exists")
+	}
+	return participants, nil
+}
+
 func (s *service) Count(criteria map[string]interface{}, search string) int64 {
 	var result int64
-	query := s.db.Table("participants").Where(criteria)
+	query := s.db.Table("participants").Where(criteria).Where("deleted_at IS NULL")
 	if search != "" {
 		query.Where("name LIKE ?", search+"%").
 			Or("nik LIKE ?", search+"%").
@@ -258,7 +272,7 @@ func (s *service) ReadAllReportByRangeDate(criteria map[string]interface{}, star
 func (s *service) ReadAllReportByRangeDateV2(criteria map[string]interface{}, startDate, endDate time.Time, page, size int) ([]*model.Report, error) {
 	var reports []*model.Report
 
-	query := s.db.Table("participants").Select("ROW_NUMBER() OVER (ORDER BY id) AS No", "nik as NIK", "name AS Name", "SUBSTRING(image_penerima, 7) as Image", "phone AS Phone", "address AS Address", "COUNT(*) OVER() AS Total").Where("deleted_at IS NULL").Where(criteria)
+	query := s.db.Table("participants").Select("ROW_NUMBER() OVER (ORDER BY id) AS No", "id AS ID", "nik as NIK", "name AS Name", "SUBSTRING(image_penerima, 7) as Image", "phone AS Phone", "address AS Address", "COUNT(*) OVER() AS Total").Where("deleted_at IS NULL").Where(criteria)
 	if !startDate.IsZero() && !endDate.IsZero() {
 		query.Where("updated_at <= ? AND updated_at >=  ?", endDate, startDate)
 
@@ -360,7 +374,7 @@ func (s *service) CountAllStatusGroup(criteria map[string]interface{}) ([]*model
 				SUM( status = "NOT DONE" ) AS total_belum_menerima,
 				SUM( status = "REJECTED" ) AS total_data_gugur`
 
-	err := s.db.Debug().Table("participants").Select(query).Where("deleted_at IS NULL").Where(criteria).Group("residence_provinsi, residence_kota").Order("residence_provinsi ASC").Find(&list).Error
+	err := s.db.Table("participants").Select(query).Where("deleted_at IS NULL").Where(criteria).Group("residence_provinsi, residence_kota").Order("residence_provinsi ASC").Find(&list).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		fmt.Printf("[participant.service.CountAllStatusGroup] error execute query %v \n", err)
@@ -393,4 +407,32 @@ func (s *service) Delete(id int) error {
 		return fmt.Errorf("id is not exists")
 	}
 	return nil
+}
+
+func (s *service) DeleteBy(criteria map[string]interface{}) error {
+	var participant = model.Participant{}
+	err := s.db.Table("participants").Where(criteria).First(&participant).Delete(&participant).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[participant.service.Delete] error execute query %v \n", err)
+		return fmt.Errorf("id is not exists")
+	}
+	return nil
+}
+
+func (s *service) ReadAllDuplicates() ([]*model.Participant, error) {
+	var participants []*model.Participant
+	query := `t.* 
+				right join
+				(select nik from participants group by 1 having count(*)>1) duplicates
+				on duplicates.nik=t.nik
+				order by nik`
+	err := s.db.Table("participants t").Select(query).Where("deleted_at IS NULL").Find(&participants).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[participant.service.ReadAllDuplicates] error execute query %v \n", err)
+		return nil, fmt.Errorf("failed view all data")
+	}
+
+	return participants, nil
 }

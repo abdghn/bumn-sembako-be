@@ -42,8 +42,8 @@ type Participant struct {
 	HasPrinted         bool           `json:"has_represented" gorm:"default:false"`
 	UpdatedBy          string         `json:"updated_by" gorm:"type:varchar(100)"`
 	Reference          string         `json:"reference" gorm:"type: text"`
-	CreatedAt          time.Time      `json:"created_at"`
-	UpdatedAt          time.Time      `json:"updated_at"`
+	CreatedAt          time.Time      `json:"created_at" gorm:"index"`
+	UpdatedAt          time.Time      `json:"updated_at" gorm:"index"`
 	DeletedAt          gorm.DeletedAt `sql:"index" json:"deleted_at" gorm:"index"`
 }
 
@@ -68,6 +68,7 @@ type TotalParticipantListResponse struct {
 
 type Report struct {
 	No       int
+	ID       int
 	NIK      string
 	Name     string
 	Phone    string

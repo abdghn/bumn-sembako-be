@@ -109,6 +109,7 @@ type ParticipantEditInput struct {
 	Image              string `json:"image" form:"image"`
 	ImagePenerima      string `json:"image_penerima" form:"image_penerima"`
 	UpdatedBy          string `json:"updated_by" form:"updated_by"`
+	HasPrinted         bool   `json:"has_printed"`
 }
 
 type ParticipantDone struct {

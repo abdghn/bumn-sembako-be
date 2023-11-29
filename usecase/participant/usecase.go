@@ -43,6 +43,7 @@ type Usecase interface {
 	ExportV2(input request.Report) ([]*model.ReportPerFile, error)
 	Reset(id int) (*model.Participant, error)
 	Delete(id int) error
+	DeleteBy() error
 }
 
 type usecase struct {
@@ -366,7 +367,6 @@ func (u *usecase) Export(input request.Report) ([]*model.ReportPerFile, error) {
 
 	totalPage := int(math.Ceil(float64(input.TotalSudahMenerima) / float64(limit)))
 
-	fmt.Println(totalPage)
 	for i := 1; i <= totalPage; i++ {
 		reports, err := u.service.ReadAllReportByRangeDateV2(criteria, startDate, endDate, i, limit)
 		if err != nil {
@@ -465,6 +465,21 @@ func (u *usecase) Export(input request.Report) ([]*model.ReportPerFile, error) {
 		}
 
 		reportPerFile = append(reportPerFile, r)
+
+		go func(list []*model.Report) {
+
+			for _, report := range list {
+				requestInput := &request.ParticipantEditInput{
+					HasPrinted: true,
+				}
+
+				_, err = u.service.Update(report.ID, requestInput)
+				if err != nil {
+					return
+				}
+
+			}
+		}(reports)
 
 	}
 
@@ -1120,4 +1135,49 @@ func (u *usecase) Reset(id int) (*model.Participant, error) {
 
 func (u *usecase) Delete(id int) error {
 	return u.service.Delete(id)
+}
+
+func (u *usecase) DeleteBy() error {
+	criteria := make(map[string]interface{})
+	var err error
+	participants, err := u.service.ReadAllDuplicates()
+	if err != nil {
+		return err
+	}
+
+	// TODO: Update logic many delete
+	for _, m := range participants {
+		total := u.service.Count(map[string]interface{}{
+			"nik":    m.NIK,
+			"status": "REJECTED",
+		}, "")
+
+		if total == 2 {
+			err = u.service.DeleteBy(map[string]interface{}{
+				"nik":    m.NIK,
+				"status": "REJECTED",
+			})
+			if err != nil {
+				return err
+			}
+		} else {
+			totalNotDone := u.service.Count(map[string]interface{}{
+				"nik":    m.NIK,
+				"status": "NOT DONE",
+			}, "")
+			if totalNotDone > 1 {
+				err = u.service.DeleteBy(map[string]interface{}{
+					"id":     m.ID,
+					"status": "NOT DONE",
+				})
+				if err != nil {
+					return err
+				}
+			} else {
+
+			}
+		}
+
+	}
+	return u.service.DeleteBy(criteria)
 }
