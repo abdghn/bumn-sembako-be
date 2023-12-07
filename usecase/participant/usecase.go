@@ -365,7 +365,7 @@ func (u *usecase) Export(input request.Report) ([]*model.ReportPerFile, error) {
 		criteria["residence_kota"] = input.Kota
 	}
 
-	if !(input.HasPrinted == "ALL") || input.HasPrinted != ""{
+	if !(input.HasPrinted == "ALL") && input.HasPrinted != ""{
 		if input.HasPrinted == "PRINTED" {
 			criteria["has_printed"] = true
 		} else {
