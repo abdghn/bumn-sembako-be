@@ -42,6 +42,7 @@ type Participant struct {
 	HasPrinted         bool           `json:"has_represented" gorm:"default:false"`
 	UpdatedBy          string         `json:"updated_by" gorm:"type:varchar(100)"`
 	Reference          string         `json:"reference" gorm:"type: text"`
+	Type               string         `json:"type" gorm:"type:varchar(100);index"`
 	CreatedAt          time.Time      `json:"created_at" gorm:"index"`
 	UpdatedAt          time.Time      `json:"updated_at" gorm:"index"`
 	DeletedAt          gorm.DeletedAt `sql:"index" json:"deleted_at" gorm:"index"`

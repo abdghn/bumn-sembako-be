@@ -22,6 +22,7 @@ type Service interface {
 	ReadById(id int) (*model.Participant, error)
 	ReadBy(criteria map[string]interface{}) ([]*model.Participant, error)
 	Count(criteria map[string]interface{}, search string) int64
+	CountNotInId(criteria map[string]interface{}, id int) int64
 	CountLogs(criteria map[string]interface{}) int64
 	CountByDate(criteria map[string]interface{}, date time.Time) int64
 	CountByRangeDate(criteria map[string]interface{}, startDate, endDate time.Time) int64
@@ -146,6 +147,17 @@ func (s *service) Count(criteria map[string]interface{}, search string) int64 {
 			Or("residence_kode_pos LIKE ?", search+"%")
 	}
 
+	err := query.Count(&result).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		return 0
+	}
+	return result
+}
+
+func (s *service) CountNotInId(criteria map[string]interface{}, id int) int64 {
+	var result int64
+	query := s.db.Table("participants").Where(criteria).Where("id NOT IN (?)", id).Where("deleted_at IS NULL")
 	err := query.Count(&result).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)

@@ -83,6 +83,7 @@ func main() {
 
 	v1.POST("login", uh.Login)
 	v1.POST("register", uh.Register)
+	v1.POST("register-yayasan", uh.RegisterYayasan)
 	v1.GET("dashboard", ph.ViewDashboard)
 	v1.GET("excel", ph.ExportExcel)
 	v1.POST("report/export", ph.ExportReport)
@@ -97,6 +98,8 @@ func main() {
 		user.PUT("/:id", uh.UpdateUser)
 		user.DELETE("/:id", uh.DeleteUser)
 		user.GET("organization", uh.ViewOrganizations)
+		user.GET("organization/eo", uh.ViewEOOrganizations)
+		user.GET("organization/yayasan", uh.ViewYayasanOrganizations)
 	}
 
 	participant := v1.Group("/participant")

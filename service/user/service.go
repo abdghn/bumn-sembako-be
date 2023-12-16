@@ -25,6 +25,8 @@ type Service interface {
 	Count(criteria map[string]interface{}) int64
 	ReadAllBy(criteria map[string]interface{}, search string, page, size int) (*[]model.User, error)
 	ReadAllOrganization() (*[]model.Organization, error)
+	ReadAllOrganizationEO() (*[]model.Organization, error)
+	ReadAllOrganizationYayasan() (*[]model.Organization, error)
 }
 
 type service struct {
@@ -143,6 +145,28 @@ func (s *service) ReadAllOrganization() (*[]model.Organization, error) {
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		fmt.Printf("[user.service.ReadAllOrganization] error execute query %v \n", err)
+		return nil, fmt.Errorf("failed view all data")
+	}
+	return &organizations, nil
+}
+
+func (s *service) ReadAllOrganizationEO() (*[]model.Organization, error) {
+	var organizations []model.Organization
+	err := s.db.Where("type = 'EO'").Find(&organizations).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[user.service.ReadAllOrganizationEO] error execute query %v \n", err)
+		return nil, fmt.Errorf("failed view all data")
+	}
+	return &organizations, nil
+}
+
+func (s *service) ReadAllOrganizationYayasan() (*[]model.Organization, error) {
+	var organizations []model.Organization
+	err := s.db.Where("type = 'Yayasan'").Find(&organizations).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[user.service.ReadAllOrganizationYayasan] error execute query %v \n", err)
 		return nil, fmt.Errorf("failed view all data")
 	}
 	return &organizations, nil

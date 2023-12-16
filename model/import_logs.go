@@ -12,6 +12,7 @@ type ImportLog struct {
 	Path        string     `json:"path" gorm:"type: text"`
 	Reference   string     `json:"reference" gorm:"type:varchar(255)"`
 	UploadedBy  string     `json:"uploaded_by" gorm:"type:varchar(255)"`
+	Type        string     `json:"type" gorm:"type:varchar(100)"`
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
 	DeletedAt   *time.Time `sql:"index" json:"deleted_at"`

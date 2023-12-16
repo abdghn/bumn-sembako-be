@@ -16,9 +16,11 @@ import (
 )
 
 const ROLE = "STAFF-LAPANGAN"
+const ROLE_YAYASAN = "STAFF-YAYASAN"
 
 type Usecase interface {
 	Register(user request.Register) (*model.User, error)
+	RegisterYayasan(user request.Register) (*model.User, error)
 	Create(user request.User) (*model.User, error)
 	Login(user request.Login) (*model.User, error)
 	ReadAllBy(req request.UserPaged) (*[]model.User, error)
@@ -27,6 +29,8 @@ type Usecase interface {
 	Update(id int, user *model.User) (*model.User, error)
 	Delete(id int) error
 	ReadAllOrganization() (*[]model.Organization, error)
+	ReadAllOrganizationEO() (*[]model.Organization, error)
+	ReadAllOrganizationYayasan() (*[]model.Organization, error)
 }
 
 type usecase struct {
@@ -110,6 +114,41 @@ func (u *usecase) Register(user request.Register) (*model.User, error) {
 
 }
 
+func (u *usecase) RegisterYayasan(user request.Register) (*model.User, error) {
+	getUser, err := u.service.CheckByUsername(user.Username)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		helper.CommonLogger().Error(err)
+		return nil, err
+	}
+
+	if getUser.ID > 0 {
+		return nil, fmt.Errorf("username sudah terdaftar, silahkan menggunakan username lain")
+	}
+
+	helper.HashPassword(&user.Password)
+
+	newUser := &model.User{
+		Name:           user.Name,
+		Username:       user.Username,
+		Password:       user.Password,
+		OrganizationID: user.OrganizationID,
+		Kota:           user.Kota,
+		Provinsi:       user.Provinsi,
+		Role:           ROLE_YAYASAN,
+	}
+
+	m, err := u.service.Create(newUser)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		return nil, err
+	}
+
+	m.Password = ""
+
+	return m, nil
+
+}
+
 func (u *usecase) Login(user request.Login) (*model.User, error) {
 
 	getUser, err := u.service.ReadByUsername(user.Username)
@@ -153,4 +192,12 @@ func (u *usecase) Delete(id int) error {
 
 func (u *usecase) ReadAllOrganization() (*[]model.Organization, error) {
 	return u.service.ReadAllOrganization()
+}
+
+func (u *usecase) ReadAllOrganizationEO() (*[]model.Organization, error) {
+	return u.service.ReadAllOrganizationEO()
+}
+
+func (u *usecase) ReadAllOrganizationYayasan() (*[]model.Organization, error) {
+	return u.service.ReadAllOrganizationYayasan()
 }

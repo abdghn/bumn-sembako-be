@@ -18,12 +18,15 @@ import (
 
 type Handler interface {
 	Register(c *gin.Context)
+	RegisterYayasan(c *gin.Context)
 	Login(c *gin.Context)
 	ViewUsers(c *gin.Context)
 	CreateUser(c *gin.Context)
 	UpdateUser(c *gin.Context)
 	DeleteUser(c *gin.Context)
 	ViewOrganizations(c *gin.Context)
+	ViewEOOrganizations(c *gin.Context)
+	ViewYayasanOrganizations(c *gin.Context)
 }
 
 type handler struct {
@@ -51,6 +54,32 @@ func (h *handler) Register(c *gin.Context) {
 	}
 
 	newUser, err := h.usecase.Register(user)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	newUser.Password = ""
+	helper.HandleSuccess(c, newUser)
+
+}
+
+func (h *handler) RegisterYayasan(c *gin.Context) {
+	var user request.Register
+	err := c.Bind(&user)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, "Oopss server someting wrong")
+		return
+	}
+
+	if user.Username == "" {
+		helper.HandleError(c, http.StatusBadRequest, "column cannot be empty")
+		return
+	}
+
+	newUser, err := h.usecase.RegisterYayasan(user)
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		helper.HandleError(c, http.StatusInternalServerError, err.Error())
@@ -214,6 +243,30 @@ func (h *handler) DeleteUser(c *gin.Context) {
 
 func (h *handler) ViewOrganizations(c *gin.Context) {
 	organizations, err := h.usecase.ReadAllOrganization()
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	helper.HandleSuccess(c, organizations)
+
+}
+
+func (h *handler) ViewEOOrganizations(c *gin.Context) {
+	organizations, err := h.usecase.ReadAllOrganizationEO()
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	helper.HandleSuccess(c, organizations)
+
+}
+
+func (h *handler) ViewYayasanOrganizations(c *gin.Context) {
+	organizations, err := h.usecase.ReadAllOrganizationYayasan()
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		helper.HandleError(c, http.StatusInternalServerError, err.Error())

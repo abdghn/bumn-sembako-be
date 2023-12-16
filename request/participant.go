@@ -20,6 +20,7 @@ type ParticipantPaged struct {
 	Kecamatan string `form:"kecamatan"`
 	Kelurahan string `form:"kelurahan"`
 	Status    string `form:"status"`
+	Type      string `form:"type"`
 }
 
 type ParticipantFilter struct {
@@ -28,6 +29,7 @@ type ParticipantFilter struct {
 	Date      string `form:"date"`
 	Kecamatan string `form:"kecamatan"`
 	Kelurahan string `form:"kelurahan"`
+	Type      string `form:"type"`
 }
 
 type ParticipantInput struct {
@@ -51,6 +53,7 @@ type ParticipantInput struct {
 	ResidenceKecamatan string `json:"residence_kecamatan" form:"residence_kecamatan"`
 	ResidenceKelurahan string `json:"residence_kelurahan" form:"residence_kelurahan"`
 	ResidenceKodePOS   string `json:"residence_kode_pos" form:"residence_kode_pos"`
+	Type               string `json:"type" form:"type"`
 	Status             string `json:"status" form:"status"`
 	Note               string `json:"note" form:"note"`
 }
@@ -82,6 +85,7 @@ type UpdateParticipant struct {
 	File               *multipart.FileHeader `json:"-" form:"file"`
 	FilePenerima       *multipart.FileHeader `json:"-" form:"file_penerima"`
 	UpdatedBy          string                `json:"updated_by" form:"updated_by"`
+	Type               string                `json:"type" form:"type"`
 }
 
 type ParticipantEditInput struct {
@@ -110,6 +114,7 @@ type ParticipantEditInput struct {
 	ImagePenerima      string `json:"image_penerima" form:"image_penerima"`
 	UpdatedBy          string `json:"updated_by" form:"updated_by"`
 	HasPrinted         bool   `json:"has_printed"`
+	Type               string `json:"type" form:"type"`
 }
 
 type ParticipantDone struct {
@@ -136,7 +141,8 @@ type Report struct {
 	Evaluasi           template.HTML `json:"evaluasi"`
 	Solusi             template.HTML `json:"solusi"`
 	Url                string
-	TotalSudahMenerima int `json:"total_sudah_menerima"`
+	TotalSudahMenerima int    `json:"total_sudah_menerima"`
+	Type               string `json:"type"`
 }
 
 type ImportParticipant struct {
@@ -145,4 +151,5 @@ type ImportParticipant struct {
 	Path       string                `json:"path" form:"path"`
 	TmpPath    string                `json:"tmp_path" form:"tmp_path"`
 	UploadedBy string                `json:"uploaded_by" form:"uploaded_by"`
+	Type       string                `json:"type" form:"type"`
 }

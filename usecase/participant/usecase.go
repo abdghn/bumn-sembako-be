@@ -78,6 +78,10 @@ func (u *usecase) ReadAllBy(req request.ParticipantPaged) (*[]model.Participant,
 		criteria["status"] = req.Status
 	}
 
+	if req.Type != "" {
+		criteria["type"] = req.Type
+	}
+
 	return u.service.ReadAllBy(criteria, req.Search, req.Page, req.Size)
 }
 
@@ -112,6 +116,10 @@ func (u *usecase) Count(req request.ParticipantPaged) int64 {
 		criteria["status"] = req.Status
 	}
 
+	if req.Type != "" {
+		criteria["type"] = req.Type
+	}
+
 	return u.service.Count(criteria, req.Search)
 }
 
@@ -140,9 +148,19 @@ func (u *usecase) Update(id int, input request.UpdateParticipant) (*model.Partic
 	} else if input.Status == "REJECTED" {
 		req := &request.PartialDone{Status: "REJECTED", UpdatedBy: input.UpdatedBy}
 
-		_, err = u.service.UpdateStatus(id, req)
+		participantRejected, err := u.service.UpdateStatus(id, req)
 		if err != nil {
 			return nil, err
+		}
+
+		err = u.service.Delete(participantRejected.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		nik := u.service.Count(map[string]interface{}{"nik": input.NIK}, "")
+		if nik > 0 {
+			return nil, fmt.Errorf("NIK already exists")
 		}
 
 		m := &model.Participant{
@@ -202,6 +220,11 @@ func (u *usecase) Edit(id int, input request.UpdateParticipant) (*model.Particip
 		return nil, err
 	}
 
+	nik := u.service.CountNotInId(map[string]interface{}{"nik": input.NIK}, id)
+	if nik > 0 {
+		return nil, fmt.Errorf("NIK already exists")
+	}
+
 	req := &request.ParticipantEditInput{
 		Name:               input.Name,
 		NIK:                input.NIK,
@@ -225,6 +248,7 @@ func (u *usecase) Edit(id int, input request.UpdateParticipant) (*model.Particip
 		ResidenceKodePOS:   input.ResidenceKodePOS,
 		Status:             input.Status,
 		UpdatedBy:          model.UpdatedBy,
+		Type:               input.Type,
 	}
 
 	if input.Image != "" {
@@ -262,6 +286,10 @@ func (u *usecase) GetTotalDashboard(req request.ParticipantFilter) (*model.Total
 
 	if req.Kota != "" {
 		criteria["residence_kota"] = req.Kota
+	}
+
+	if req.Type != "" {
+		criteria["type"] = req.Type
 	}
 
 	dataQuota, err := u.service.GetQuota(criteria)
@@ -344,6 +372,10 @@ func (u *usecase) GetTotalDashboardV2(req request.ParticipantFilter) (*model.Tot
 		criteria["residence_kelurahan"] = req.Kelurahan
 	}
 
+	if req.Type != "" {
+		criteria["type"] = req.Type
+	}
+
 	return u.service.CountAllStatus(criteria)
 }
 
@@ -371,6 +403,10 @@ func (u *usecase) Export(input request.Report) ([]*model.ReportPerFile, error) {
 		} else if input.HasPrinted == "NOT PRINTED" {
 			criteria["has_printed"] = false
 		}
+	}
+
+	if input.Type != "" {
+		criteria["type"] = input.Type
 	}
 
 	totalPage := int(math.Ceil(float64(input.TotalSudahMenerima) / float64(limit)))
@@ -798,6 +834,7 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 				ResidenceKodePOS:   row.ResidenceKodePOS,
 				Status:             row.Status,
 				Reference:          randString,
+				Type:               req.Type,
 			}
 
 			_, err = u.service.Create(newParticipant)
@@ -871,6 +908,7 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 		FailedRows:  failedRows,
 		Path:        req.Path,
 		UploadedBy:  req.UploadedBy,
+		Type:        req.Type,
 	}
 
 	if successRows > 0 {
@@ -904,6 +942,10 @@ func (u *usecase) ExportExcel(req request.ParticipantFilter) (string, error) {
 
 	if req.Kota != "" {
 		criteria["residence_kota"] = req.Kota
+	}
+
+	if req.Type != "" {
+		criteria["type"] = req.Type
 	}
 
 	rows, err := u.service.CountAllStatusGroup(criteria)
@@ -953,6 +995,10 @@ func (u *usecase) ExportV2(input request.Report) ([]*model.ReportPerFile, error)
 
 	if input.Kota != "" {
 		criteria["residence_kota"] = input.Kota
+	}
+
+	if input.Type != "" {
+		criteria["type"] = input.Type
 	}
 
 	// totalPage := int(math.Ceil(float64(input.TotalSudahMenerima) / float64(limit)))
