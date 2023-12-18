@@ -188,6 +188,7 @@ func (u *usecase) Update(id int, input request.UpdateParticipant) (*model.Partic
 			ImagePenerima:      input.ImagePenerima,
 			Status:             "DONE",
 			UpdatedBy:          input.UpdatedBy,
+			Type:               participantRejected.Type,
 		}
 
 		newParticipant, err := u.service.Create(m)
