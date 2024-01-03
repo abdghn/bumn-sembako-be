@@ -12,6 +12,7 @@ import (
 	"bumn-sembako-be/request"
 	"bumn-sembako-be/service/user"
 	"fmt"
+
 	"gorm.io/gorm"
 )
 
@@ -60,7 +61,7 @@ func (u *usecase) Create(user request.User) (*model.User, error) {
 		Name:           user.Name,
 		Username:       user.Username,
 		Password:       user.Password,
-		Role:           "ADMIN-EO",
+		Role:           user.Role,
 		OrganizationID: user.OrganizationID,
 		Kota:           user.Kota,
 		Provinsi:       user.Provinsi,
