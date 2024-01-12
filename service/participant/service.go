@@ -55,10 +55,10 @@ func NewService(db *gorm.DB) Service {
 func (e *service) ReadAllBy(criteria map[string]interface{}, search string, page, size int) (*[]model.Participant, error) {
 	var participants []model.Participant
 
-	query := e.db.Where(criteria).Where("deleted_at IS NULL")
+	query := e.db
 
 	if search != "" {
-		query.Or("name LIKE ?", search+"%").
+		query.Where("name LIKE ?", search+"%").
 			Or("nik LIKE ?", search+"%").
 			Or("phone LIKE ?", search+"%").
 			Or("address LIKE ?", search+"%").
@@ -76,7 +76,7 @@ func (e *service) ReadAllBy(criteria map[string]interface{}, search string, page
 	}
 
 	limit, offset := helper.GetLimitOffset(page, size)
-	err := query.Offset(offset).Order("created_at ASC").Limit(limit).Find(&participants).Error
+	err := query.Where(criteria).Where("deleted_at IS NULL").Offset(offset).Order("created_at ASC").Limit(limit).Find(&participants).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		fmt.Printf("[participant.service.ReadAllBy] error execute query %v \n", err)
@@ -88,14 +88,14 @@ func (e *service) ReadAllBy(criteria map[string]interface{}, search string, page
 func (e *service) ReadAllLogBy(criteria map[string]interface{}, search string, page, size int) ([]model.ImportLog, error) {
 	var logs []model.ImportLog
 
-	query := e.db.Where(criteria).Where("deleted_at IS NULL")
+	query := e.db
 
 	if search != "" {
-		query.Or("name LIKE ?", search+"%")
+		query.Where("name LIKE ?", search+"%")
 	}
 
 	limit, offset := helper.GetLimitOffset(page, size)
-	err := query.Offset(offset).Order("created_at DESC").Limit(limit).Find(&logs).Error
+	err := query.Where(criteria).Where("deleted_at IS NULL").Offset(offset).Order("created_at DESC").Limit(limit).Find(&logs).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		fmt.Printf("[participant.service.ReadAllLogBy] error execute query %v \n", err)
@@ -128,9 +128,9 @@ func (s *service) ReadBy(criteria map[string]interface{}) ([]*model.Participant,
 
 func (s *service) Count(criteria map[string]interface{}, search string) int64 {
 	var result int64
-	query := s.db.Table("participants").Where(criteria).Where("deleted_at IS NULL")
+	query := s.db.Table("participants")
 	if search != "" {
-		query.Or("name LIKE ?", search+"%").
+		query.Where("name LIKE ?", search+"%").
 			Or("nik LIKE ?", search+"%").
 			Or("phone LIKE ?", search+"%").
 			Or("address LIKE ?", search+"%").
@@ -147,7 +147,7 @@ func (s *service) Count(criteria map[string]interface{}, search string) int64 {
 			Or("residence_kode_pos LIKE ?", search+"%")
 	}
 
-	err := query.Count(&result).Error
+	err := query.Where(criteria).Where("deleted_at IS NULL").Count(&result).Error
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		return 0
