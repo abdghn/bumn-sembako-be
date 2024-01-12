@@ -55,10 +55,10 @@ func NewService(db *gorm.DB) Service {
 func (e *service) ReadAllBy(criteria map[string]interface{}, search string, page, size int) (*[]model.Participant, error) {
 	var participants []model.Participant
 
-	query := e.db.Where(criteria)
+	query := e.db.Where(criteria).Where("deleted_at IS NULL")
 
 	if search != "" {
-		query.Where("name LIKE ?", search+"%").
+		query.Or("name LIKE ?", search+"%").
 			Or("nik LIKE ?", search+"%").
 			Or("phone LIKE ?", search+"%").
 			Or("address LIKE ?", search+"%").
@@ -88,10 +88,10 @@ func (e *service) ReadAllBy(criteria map[string]interface{}, search string, page
 func (e *service) ReadAllLogBy(criteria map[string]interface{}, search string, page, size int) ([]model.ImportLog, error) {
 	var logs []model.ImportLog
 
-	query := e.db.Where(criteria)
+	query := e.db.Where(criteria).Where("deleted_at IS NULL")
 
 	if search != "" {
-		query.Where("name LIKE ?", search+"%")
+		query.Or("name LIKE ?", search+"%")
 	}
 
 	limit, offset := helper.GetLimitOffset(page, size)
@@ -130,7 +130,7 @@ func (s *service) Count(criteria map[string]interface{}, search string) int64 {
 	var result int64
 	query := s.db.Table("participants").Where(criteria).Where("deleted_at IS NULL")
 	if search != "" {
-		query.Where("name LIKE ?", search+"%").
+		query.Or("name LIKE ?", search+"%").
 			Or("nik LIKE ?", search+"%").
 			Or("phone LIKE ?", search+"%").
 			Or("address LIKE ?", search+"%").
