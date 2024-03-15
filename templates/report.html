@@ -122,6 +122,16 @@
                 clear: both;
             }
 
+            @media screen {
+                .new-page {
+                    page-break-before: always;
+                }
+                .keep-together {
+                    page-break-inside: avoid;
+                }
+
+            }
+
             @media print {
                 .new-page {
                     page-break-before: always;
