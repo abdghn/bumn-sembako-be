@@ -89,6 +89,8 @@ func (r *RequestPdf) GeneratePDF(pdfPath string, args []string) (bool, error) {
 	pageReader.NoBackground.Set(true)
 
 	pageReader.PageOptions.EnableLocalFileAccess.Set(true)
+	pageReader.PageOptions.DisableSmartShrinking.Set(true)
+	pageReader.PageOptions.Encoding.Set("UTF-8")
 
 	pdfg.AddPage(pageReader)
 
