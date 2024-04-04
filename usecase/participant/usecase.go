@@ -813,7 +813,7 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 
 		if len(note) == 0 {
 			newParticipant := &model.Participant{
-				Name:               row.Name,
+				Name:               strings.TrimSpace(row.Name),
 				NIK:                row.NIK,
 				Gender:             row.Gender,
 				Phone:              row.Phone,
