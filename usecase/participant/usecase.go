@@ -600,8 +600,8 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 	for i := 2; i < 50000; i++ {
 		var note []string
 		row := &request.ParticipantInput{
-			Name:               xlsx.GetCellValue(sheet1Name, fmt.Sprintf("A%d", i)),
-			NIK:                xlsx.GetCellValue(sheet1Name, fmt.Sprintf("B%d", i)),
+			Name:               strings.TrimSpace(xlsx.GetCellValue(sheet1Name, fmt.Sprintf("A%d", i))),
+			NIK:                strings.TrimSpace(xlsx.GetCellValue(sheet1Name, fmt.Sprintf("B%d", i))),
 			Gender:             xlsx.GetCellValue(sheet1Name, fmt.Sprintf("C%d", i)),
 			Phone:              xlsx.GetCellValue(sheet1Name, fmt.Sprintf("D%d", i)),
 			Address:            xlsx.GetCellValue(sheet1Name, fmt.Sprintf("E%d", i)),
@@ -645,7 +645,7 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 		if !regexp.MustCompile(`\d`).MatchString(row.NIK) {
 			note = append(note, "NIK terdapat karakter atau simbol karakter \n")
 		} else {
-			if len(row.NIK) != 16 {
+			if len(strings.TrimLeft(row.NIK, " ")) != 16 {
 				note = append(note, "NIK tidak 16 digit \n")
 			} else {
 				validChar := helper.ContainString("1234567890", row.NIK)
