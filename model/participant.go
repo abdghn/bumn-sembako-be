@@ -15,8 +15,8 @@ import (
 
 type Participant struct {
 	ID                 int            `json:"id" gorm:"primary_key"`
-	Name               string         `json:"name" gorm:"type:varchar(255)"`
-	NIK                string         `json:"nik" gorm:"type:varchar(255)"`
+	Name               string         `json:"name" gorm:"type:varchar(255);index"`
+	NIK                string         `json:"nik" gorm:"type:varchar(255);index"`
 	Gender             string         `json:"gender" gorm:"type:varchar(255)"`
 	Phone              string         `json:"phone" gorm:"type:varchar(255)"`
 	Address            string         `json:"address" gorm:"type: text"`

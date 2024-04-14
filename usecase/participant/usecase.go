@@ -597,7 +597,7 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 	newFile.SetCellValue(sheet1Name, "V1", "Catatan")
 
 	var rows []*request.ParticipantInput
-	for i := 2; i < 50000; i++ {
+	for i := 2; i < 60000; i++ {
 		var note []string
 		row := &request.ParticipantInput{
 			Name:               strings.TrimSpace(xlsx.GetCellValue(sheet1Name, fmt.Sprintf("A%d", i))),
@@ -653,7 +653,7 @@ func (u *usecase) BulkCreate(req request.ImportParticipant) (*model.ImportLog, e
 					note = append(note, "NIK Tidak Sesuai Format \n")
 				}
 
-				countBynik := u.service.Count(map[string]interface{}{"nik": row.NIK}, "")
+				countBynik := u.service.CheckId(map[string]interface{}{"nik": row.NIK})
 				if countBynik > 0 {
 					note = append(note, "NIK Sudah Terdaftar \n")
 				}
