@@ -13,8 +13,10 @@ import (
 	"bumn-sembako-be/service/participant"
 	"bumn-sembako-be/service/region"
 	"encoding/base64"
+	"encoding/csv"
 	"fmt"
 	"html/template"
+	"log"
 	"math"
 	"net/http"
 	"os"
@@ -38,6 +40,8 @@ type Usecase interface {
 	GetTotalDashboardV2(req request.ParticipantFilter) (*model.TotalParticipantResponse, error)
 	BulkCreate(req request.ImportParticipant) (*model.ImportLog, error)
 	ExportExcel(req request.ParticipantFilter) (string, error)
+	ExportExcelData(req request.ParticipantFilter) (string, error)
+	ExportCSVData(req request.ParticipantFilter) (string, error)
 	Export(input request.Report) ([]*model.ReportPerFile, error)
 	ConvertBase64(path string) template.URL
 	ExportV2(input request.Report) ([]*model.ReportPerFile, error)
@@ -975,6 +979,204 @@ func (u *usecase) ExportExcel(req request.ParticipantFilter) (string, error) {
 	if err != nil {
 		return "", nil
 	}
+
+	timer1 := time.NewTimer(30 * time.Second)
+	go func(filename string) {
+		<-timer1.C
+		os.Remove(filename)
+	}(tmpFile)
+
+	return "image/" + filename, nil
+
+}
+
+func (u *usecase) ExportExcelData(req request.ParticipantFilter) (string, error) {
+	criteria := make(map[string]interface{})
+	xlsx := excelize.NewFile()
+	sheet1Name := "Sheet1"
+	xlsx.SetSheetName(xlsx.GetSheetName(1), sheet1Name)
+	xlsx.SetCellValue(sheet1Name, "A1", "Nama")
+	xlsx.SetCellValue(sheet1Name, "B1", "NIK")
+	xlsx.SetCellValue(sheet1Name, "C1", "Jenis Kelamin")
+	xlsx.SetCellValue(sheet1Name, "D1", "No Handphone")
+	xlsx.SetCellValue(sheet1Name, "E1", "Alamat Sesuai KTP")
+	xlsx.SetCellValue(sheet1Name, "F1", "RT")
+	xlsx.SetCellValue(sheet1Name, "G1", "RW")
+	xlsx.SetCellValue(sheet1Name, "H1", "Provinsi")
+	xlsx.SetCellValue(sheet1Name, "I1", "Kota/Kabupaten")
+	xlsx.SetCellValue(sheet1Name, "J1", "Kecamatan")
+	xlsx.SetCellValue(sheet1Name, "K1", "Kelurahan")
+	xlsx.SetCellValue(sheet1Name, "L1", "Kode Pos")
+	xlsx.SetCellValue(sheet1Name, "M1", "Alamat Domisili")
+	xlsx.SetCellValue(sheet1Name, "N1", "RT Domisili")
+	xlsx.SetCellValue(sheet1Name, "O1", "RW Domisili")
+	xlsx.SetCellValue(sheet1Name, "P1", "Provinsi Domisili")
+	xlsx.SetCellValue(sheet1Name, "Q1", "Kota/Kabupaten Domisili")
+	xlsx.SetCellValue(sheet1Name, "R1", "Kecamatan Domisili")
+	xlsx.SetCellValue(sheet1Name, "S1", "Kelurahan Domisili")
+	xlsx.SetCellValue(sheet1Name, "T1", "Kode Pos Domisili")
+	xlsx.SetCellValue(sheet1Name, "U1", "Status")
+	xlsx.SetCellValue(sheet1Name, "V1", "Tipe")
+
+	if req.Provinsi != "" {
+		criteria["residence_provinsi"] = req.Provinsi
+	}
+
+	if req.Kota != "" {
+		criteria["residence_kota"] = req.Kota
+	}
+
+	if req.Kecamatan != "" {
+		criteria["residence_kecamatan"] = req.Kecamatan
+	}
+
+	if req.Kelurahan != "" {
+		criteria["residence_kelurahan"] = req.Kelurahan
+	}
+
+	if req.Type != "" {
+		criteria["type"] = req.Type
+	}
+
+	rows, err := u.service.ReadAllWithoutPagination(criteria)
+	if err != nil {
+		return "", err
+	}
+
+	for i, row := range rows {
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("A%d", i+2), row.Name)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("B%d", i+2), row.NIK)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("C%d", i+2), row.Gender)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("D%d", i+2), row.Phone)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("E%d", i+2), row.Address)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("F%d", i+2), row.RT)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("G%d", i+2), row.RW)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("H%d", i+2), row.Provinsi)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("I%d", i+2), row.Kota)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("J%d", i+2), row.Kecamatan)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("K%d", i+2), row.Kelurahan)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("L%d", i+2), row.KodePOS)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("M%d", i+2), row.ResidenceAddress)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("N%d", i+2), row.ResidenceRT)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("O%d", i+2), row.ResidenceRW)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("P%d", i+2), row.ResidenceProvinsi)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("Q%d", i+2), row.ResidenceKota)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("R%d", i+2), row.ResidenceKecamatan)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("S%d", i+2), row.ResidenceKelurahan)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("T%d", i+2), row.ResidenceKodePOS)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("U%d", i+2), row.Status)
+		xlsx.SetCellValue(sheet1Name, fmt.Sprintf("V%d", i+2), row.Type)
+	}
+
+	path := "./uploads"
+	ext := ".xlsx"
+	currentTime := time.Now()
+	filename := currentTime.Format("20060102150405") + "-export-data" + ext
+	tmpFile := path + "/" + filename
+	err = xlsx.SaveAs(tmpFile)
+	if err != nil {
+		return "", nil
+	}
+
+	return "image/" + filename, nil
+
+}
+
+func (u *usecase) ExportCSVData(req request.ParticipantFilter) (string, error) {
+	criteria := make(map[string]interface{})
+	path := "./uploads"
+	ext := ".csv"
+	currentTime := time.Now()
+	filename := currentTime.Format("20060102150405") + "-export-data" + ext
+	tmpFile := path + "/" + filename
+
+	// WRITE TO CSV
+	file, err := os.Create(tmpFile)
+	defer file.Close()
+	if err != nil {
+		log.Fatalln("failed to open file", err)
+	}
+
+	w := csv.NewWriter(file)
+	defer w.Flush()
+
+	//xlsx := excelize.NewFile()
+	//sheet1Name := "Sheet1"
+	//xlsx.SetSheetName(xlsx.GetSheetName(1), sheet1Name)
+	//xlsx.SetCellValue(sheet1Name, "A1", "Nama")
+	//xlsx.SetCellValue(sheet1Name, "B1", "NIK")
+	//xlsx.SetCellValue(sheet1Name, "C1", "Gender")
+	//xlsx.SetCellValue(sheet1Name, "D1", "Phone")
+	//xlsx.SetCellValue(sheet1Name, "E1", "Address")
+	//xlsx.SetCellValue(sheet1Name, "F1", "RT")
+	//xlsx.SetCellValue(sheet1Name, "G1", "RW")
+
+	if req.Provinsi != "" {
+		criteria["residence_provinsi"] = req.Provinsi
+	}
+
+	if req.Kota != "" {
+		criteria["residence_kota"] = req.Kota
+	}
+
+	if req.Kecamatan != "" {
+		criteria["residence_kecamatan"] = req.Kecamatan
+	}
+
+	if req.Kelurahan != "" {
+		criteria["residence_kelurahan"] = req.Kelurahan
+	}
+
+	if req.Type != "" {
+		criteria["type"] = req.Type
+	}
+
+	if req.Status != "" {
+		criteria["status"] = req.Status
+	}
+
+	rows, err := u.service.ReadAllWithoutPagination(criteria)
+	if err != nil {
+		return "", err
+	}
+
+	for _, record := range rows {
+		row := []string{
+			record.Name,
+			record.NIK,
+			record.Gender,
+			record.Phone,
+			record.Address,
+			record.RT,
+			record.RW,
+			record.Provinsi,
+			record.Kota,
+			record.Kecamatan,
+			record.Kelurahan,
+			record.KodePOS,
+			record.ResidenceAddress,
+			record.ResidenceRT,
+			record.ResidenceRW,
+			record.ResidenceProvinsi,
+			record.ResidenceKota,
+			record.ResidenceKecamatan,
+			record.ResidenceKelurahan,
+			record.ResidenceKodePOS,
+			record.Status,
+			record.Type,
+		}
+		if err := w.Write(row); err != nil {
+			log.Fatalln("error writing record to file", err)
+		}
+	}
+	var data [][]string
+	w.WriteAll(data)
+
+	timer1 := time.NewTimer(30 * time.Second)
+	go func(filename string) {
+		<-timer1.C
+		os.Remove(filename)
+	}(tmpFile)
 
 	return "image/" + filename, nil
 

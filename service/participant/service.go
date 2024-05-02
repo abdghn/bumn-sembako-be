@@ -18,6 +18,7 @@ import (
 
 type Service interface {
 	ReadAllBy(criteria map[string]interface{}, search string, page, size int) (*[]model.Participant, error)
+	ReadAllWithoutPagination(criteria map[string]interface{}) ([]*model.Participant, error)
 	ReadAllLogBy(criteria map[string]interface{}, search string, page, size int) ([]model.ImportLog, error)
 	ReadById(id int) (*model.Participant, error)
 	ReadBy(criteria map[string]interface{}) ([]*model.Participant, error)
@@ -84,6 +85,20 @@ func (e *service) ReadAllBy(criteria map[string]interface{}, search string, page
 		return nil, fmt.Errorf("failed view all data")
 	}
 	return &participants, nil
+}
+
+func (e *service) ReadAllWithoutPagination(criteria map[string]interface{}) ([]*model.Participant, error) {
+	var participants []*model.Participant
+
+	query := e.db.Where(criteria)
+
+	err := query.Order("created_at ASC").Find(&participants).Error
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		fmt.Printf("[participant.service.ReadAllBy] error execute query %v \n", err)
+		return nil, fmt.Errorf("failed view all data")
+	}
+	return participants, nil
 }
 
 func (e *service) ReadAllLogBy(criteria map[string]interface{}, search string, page, size int) ([]model.ImportLog, error) {

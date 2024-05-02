@@ -87,6 +87,8 @@ func main() {
 	v1.GET("dashboard", ph.ViewDashboard)
 	v1.GET("excel", ph.ExportExcel)
 	v1.POST("report/export", ph.ExportReport)
+	v1.POST("report/excel/export", ph.ExportExcelData)
+	v1.POST("report/csv/export", ph.ExportCSVData)
 	v1.POST("report/export-new", ph.ExportReportV2)
 	v1.GET("photo/:path", ph.ImageHandler)
 	v1.GET("photobase64/:path", ph.ImageBase64Handler)

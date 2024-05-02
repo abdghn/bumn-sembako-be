@@ -32,6 +32,8 @@ type Handler interface {
 	ExportReportV2(c *gin.Context)
 	BulkCreate(c *gin.Context)
 	ExportExcel(c *gin.Context)
+	ExportExcelData(c *gin.Context)
+	ExportCSVData(c *gin.Context)
 	ImageHandler(c *gin.Context)
 	ImageBase64Handler(c *gin.Context)
 	Reset(c *gin.Context)
@@ -443,6 +445,48 @@ func (h *handler) ExportExcel(c *gin.Context) {
 	}
 
 	result, err := h.usecase.ExportExcel(req)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusNotFound, err.Error())
+		return
+	}
+	helper.HandleSuccess(c, result)
+
+}
+
+func (h *handler) ExportExcelData(c *gin.Context) {
+	var req request.ParticipantFilter
+	var err error
+
+	err = c.ShouldBindJSON(&req)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, "Oopss server someting wrong")
+		return
+	}
+
+	result, err := h.usecase.ExportExcelData(req)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusNotFound, err.Error())
+		return
+	}
+	helper.HandleSuccess(c, result)
+
+}
+
+func (h *handler) ExportCSVData(c *gin.Context) {
+	var req request.ParticipantFilter
+	var err error
+
+	err = c.ShouldBindJSON(&req)
+	if err != nil {
+		helper.CommonLogger().Error(err)
+		helper.HandleError(c, http.StatusInternalServerError, "Oopss server someting wrong")
+		return
+	}
+
+	result, err := h.usecase.ExportCSVData(req)
 	if err != nil {
 		helper.CommonLogger().Error(err)
 		helper.HandleError(c, http.StatusNotFound, err.Error())
