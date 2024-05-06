@@ -1143,7 +1143,7 @@ func (u *usecase) ExportCSVData(req request.ParticipantFilter) (string, error) {
 	for _, record := range rows {
 		row := []string{
 			record.Name,
-			record.NIK,
+			"'" + record.NIK,
 			record.Gender,
 			record.Phone,
 			record.Address,
